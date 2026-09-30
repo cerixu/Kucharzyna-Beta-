@@ -1,5 +1,6 @@
 import{hydrate,subscribe,getState}from"./state.js";import{initRouter,navigate}from"./router.js";
 const app=document.querySelector("#app");
+const NAV=[["start","home","Start"],["recipes","recipes","Receptury"],["shopping","shopping","Zakupy"],["inventory","inventory","Magazyn"],["settings","settings","Ustawienia"]];
 const ICONS={home:"⌂",recipes:"▤",cooking:"◒",shopping:"□",inventory:"◇",calculator:"⌗",settings:"⚙",arrow:"›"};
 const QUICK=[["recipes","recipes","Receptury","Otwórz bazę przepisów"],["cooking","cooking","Gotowanie","Prowadź danie krok po kroku"],["shopping","shopping","Zakupy","Lista produktów na dziś"],["inventory","inventory","Magazyn","Stany i końcówki"]];
 function icon(name,extra=""){return '<span class="ui-icon '+extra+'">'+(ICONS[name]||"")+"</span>"}
