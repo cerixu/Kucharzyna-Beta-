@@ -2,5 +2,5 @@
   "name":"Kucharzyna","short_name":"Kucharzyna","description":"Kuchenna aplikacja na iPhone.",
   "start_url":"./","scope":"./","display":"standalone","orientation":"portrait",
   "background_color":"#11100f","theme_color":"#11100f","lang":"pl",
-  "icons":[{"src":"./assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons":[{"src":"./assets/icons/icon-512.png","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
