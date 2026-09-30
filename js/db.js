@@ -1,0 +1,7 @@
+const DB_NAME="kucharzyna-beta-0-1";const DB_VERSION=1;
+const STORES=["recipes","shopping","inventory","settings","history","cookSessions"];let connection;
+function openDB(){if(connection)return connection;connection=new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const db=r.result;for(const store of STORES)if(!db.objectStoreNames.contains(store))db.createObjectStore(store,{keyPath:"id"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});return connection}
+export async function getAll(store){const db=await openDB();return new Promise((res,rej)=>{const r=db.transaction(store,"readonly").objectStore(store).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+export async function getOne(store,id){const db=await openDB();return new Promise((res,rej)=>{const r=db.transaction(store,"readonly").objectStore(store).get(id);r.onsuccess=()=>res(r.result??null);r.onerror=()=>rej(r.error)})}
+export async function put(store,value){const db=await openDB();return new Promise((res,rej)=>{const r=db.transaction(store,"readwrite").objectStore(store).put(value);r.onsuccess=()=>res(value);r.onerror=()=>rej(r.error)})}
+export async function remove(store,id){const db=await openDB();return new Promise((res,rej)=>{const r=db.transaction(store,"readwrite").objectStore(store).delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
