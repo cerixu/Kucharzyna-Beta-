@@ -1,24 +1,27 @@
 name: Kucharzyna iPhone E2E
+
 on:
   push:
-    branches:["**"]
+    branches: ["**"]
   pull_request:
   workflow_dispatch:
+
 jobs:
   e2e:
-    runs-on:ubuntu-latest
-    timeout-minutes:15
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses:actions/checkout@v4
-      - uses:actions/setup-node@v4
-        with:{node-version:22}
-      - run:npm install
-      - run:npx playwright install --with-deps webkit
-      - run:npx playwright test --project=iphone
-      - uses:actions/upload-artifact@v4
-        if:always()
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name:kucharzyna-playwright-report
-          path:playwright-report/
-          retention-days:14
-          if-no-files-found:warn
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps webkit
+      - run: npx playwright test --project=iphone
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kucharzyna-playwright-report
+          path: playwright-report/
+          retention-days: 14
+          if-no-files-found: warn
