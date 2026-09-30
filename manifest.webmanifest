@@ -1,6 +1,17 @@
 {
-  "name":"Kucharzyna","short_name":"Kucharzyna","description":"Kuchenna aplikacja na iPhone.",
-  "start_url":"./","scope":"./","display":"standalone","orientation":"portrait",
-  "background_color":"#11100f","theme_color":"#11100f","lang":"pl",
-  "icons":[{"src":"./assets/icons/icon-512.png","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "name":"Kucharzyna",
+  "short_name":"Kucharzyna",
+  "description":"Kuchenna aplikacja na iPhone.",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "orientation":"portrait",
+  "background_color":"#100e0c",
+  "theme_color":"#100e0c",
+  "lang":"pl",
+  "icons":[
+    {"src":"./assets/icons/icon-180.png","sizes":"180x180","type":"image/png","purpose":"any"},
+    {"src":"./assets/icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./assets/icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
 }
