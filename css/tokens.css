@@ -1,14 +1,103 @@
 :root{
---bg:#11100f;--surface:#1b1917;--surface-2:#24211e;--surface-3:#2d2925;
---text:#f7f3ec;--text-soft:#b9b1a7;--text-muted:#817970;--accent:#e7a94b;
---accent-strong:#f3bd62;--success:#79c98a;--danger:#ed7770;--line:rgba(255,255,255,.09);
---radius-card:22px;--radius-control:15px;--tap:48px;
---top-safe:env(safe-area-inset-top,0px);--bottom-safe:env(safe-area-inset-bottom,0px);
---left-safe:env(safe-area-inset-left,0px);--right-safe:env(safe-area-inset-right,0px);
---space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-7:32px;--space-8:40px;
-color-scheme:dark;
+  /* Brand */
+  --color-bg:#100e0c;
+  --color-surface-1:#181513;
+  --color-surface-2:#211d19;
+  --color-surface-3:#2b2520;
+  --color-text:#f7f1e8;
+  --color-text-soft:#c4bbb0;
+  --color-text-muted:#8d8378;
+  --color-accent:#e7a94b;
+  --color-accent-strong:#f4be63;
+  --color-success:#79c98a;
+  --color-warning:#e7a94b;
+  --color-danger:#ed7770;
+  --color-line:rgba(255,255,255,.09);
+  --color-line-strong:rgba(255,255,255,.14);
+  --color-overlay:rgba(16,14,12,.72);
+  --color-on-accent:#21170b;
+
+  /* Backwards-compatible semantic aliases */
+  --bg:var(--color-bg);
+  --surface:var(--color-surface-1);
+  --surface-2:var(--color-surface-2);
+  --surface-3:var(--color-surface-3);
+  --text:var(--color-text);
+  --text-soft:var(--color-text-soft);
+  --text-muted:var(--color-text-muted);
+  --accent:var(--color-accent);
+  --accent-strong:var(--color-accent-strong);
+  --success:var(--color-success);
+  --danger:var(--color-danger);
+  --line:var(--color-line);
+
+  /* Typography */
+  --font-sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,sans-serif;
+  --text-display:clamp(42px,11vw,48px);
+  --text-screen-title:clamp(34px,9vw,40px);
+  --text-section:22px;
+  --text-card:16px;
+  --text-body:15px;
+  --text-secondary:13px;
+  --text-caption:11px;
+  --text-eyebrow:10px;
+  --weight-regular:400;
+  --weight-medium:500;
+  --weight-semibold:650;
+  --weight-bold:700;
+  --weight-heavy:800;
+
+  /* Spacing */
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+  --space-7:32px;
+  --space-8:40px;
+  --screen-inset:18px;
+  --section-gap:28px;
+
+  /* Shape */
+  --radius-sm:12px;
+  --radius-control:15px;
+  --radius-card:20px;
+  --radius-lg:28px;
+  --radius-pill:999px;
+
+  /* Interaction */
+  --tap-min:44px;
+  --tap-comfort:48px;
+  --motion-fast:140ms;
+  --motion-standard:200ms;
+  --motion-slow:240ms;
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+
+  /* Elevation */
+  --shadow-card:0 10px 30px rgba(0,0,0,.16);
+  --shadow-featured:0 20px 45px rgba(0,0,0,.24);
+  --shadow-sheet:0 -18px 50px rgba(0,0,0,.34);
+
+  /* iPhone safe areas */
+  --top-safe:env(safe-area-inset-top,0px);
+  --bottom-safe:env(safe-area-inset-bottom,0px);
+  --left-safe:env(safe-area-inset-left,0px);
+  --right-safe:env(safe-area-inset-right,0px);
+
+  color-scheme:dark;
 }
 :root[data-theme="light"]{
---bg:#f5f1eb;--surface:#fffdf9;--surface-2:#eee9e1;--surface-3:#e4ddd4;
---text:#211e1a;--text-soft:#655d54;--text-muted:#8d8378;--line:rgba(33,30,26,.10);color-scheme:light;
+  --color-bg:#f5f0e9;
+  --color-surface-1:#fffdf9;
+  --color-surface-2:#eee8df;
+  --color-surface-3:#e3dbd1;
+  --color-text:#211e1a;
+  --color-text-soft:#655d54;
+  --color-text-muted:#8d8378;
+  --color-line:rgba(33,30,26,.10);
+  --color-line-strong:rgba(33,30,26,.16);
+  --color-overlay:rgba(245,240,233,.78);
+  --color-on-accent:#21170b;
+  color-scheme:light;
 }
