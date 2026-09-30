@@ -4,7 +4,7 @@ const app=document.querySelector("#app");
 
 const NAV=[
   ["start","home","Start"],
-  ["recipes","book","Przepisy"],
+  ["recipes","book","Receptury"],
   ["cooking","chef","Kuchnia"],
   ["shopping","bag","Zakupy"],
   ["settings","more","Więcej"]
@@ -124,9 +124,15 @@ function render(state){
 }
 
 async function boot(){
-  await hydrate();
+  // Render the shell immediately. IndexedDB must never block the first paint.
+  render(getState());
   subscribe(render);
   initRouter(()=>render(getState()));
+  try{
+    await hydrate();
+  }catch(error){
+    console.warn("Kucharzyna: IndexedDB hydrate failed, continuing with empty state.",error);
+  }
   if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
 }
 boot().catch(error=>{console.error(error);app.innerHTML='<main class="app-scroll"><section class="screen"><div class="empty-state"><h2>Nie udało się uruchomić Kucharzyny</h2><p>Odśwież aplikację.</p></div></section></main>'});
