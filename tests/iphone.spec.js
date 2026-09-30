@@ -14,8 +14,8 @@ test("Start fits the iPhone viewport",async({page})=>{
 
 test("Start navigation opens core screens",async({page})=>{
   await page.goto("/");
-  await page.getByRole("button",{name:"Przepisy"}).last().click();
-  await expect(page.getByRole("heading",{name:"Przepisy"})).toBeVisible();
+  await page.getByRole("button",{name:"Receptury"}).last().click();
+  await expect(page.getByRole("heading",{name:"Receptury"})).toBeVisible();
   await page.getByRole("button",{name:"Zakupy"}).last().click();
   await expect(page.getByRole("heading",{name:"Zakupy"})).toBeVisible();
   await page.getByRole("button",{name:"Kuchnia"}).last().click();
@@ -28,5 +28,5 @@ test("Start search control is usable",async({page})=>{
   await input.fill("carbonara");
   await expect(page.locator(".home-search-clear")).toBeVisible();
   await input.press("Enter");
-  await expect(page.getByRole("heading",{name:"Przepisy"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Receptury"})).toBeVisible();
 });
