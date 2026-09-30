@@ -1,0 +1,14 @@
+:root{
+--bg:#11100f;--surface:#1b1917;--surface-2:#24211e;--surface-3:#2d2925;
+--text:#f7f3ec;--text-soft:#b9b1a7;--text-muted:#817970;--accent:#e7a94b;
+--accent-strong:#f3bd62;--success:#79c98a;--danger:#ed7770;--line:rgba(255,255,255,.09);
+--radius-card:22px;--radius-control:15px;--tap:48px;
+--top-safe:env(safe-area-inset-top,0px);--bottom-safe:env(safe-area-inset-bottom,0px);
+--left-safe:env(safe-area-inset-left,0px);--right-safe:env(safe-area-inset-right,0px);
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-7:32px;--space-8:40px;
+color-scheme:dark;
+}
+:root[data-theme="light"]{
+--bg:#f5f1eb;--surface:#fffdf9;--surface-2:#eee9e1;--surface-3:#e4ddd4;
+--text:#211e1a;--text-soft:#655d54;--text-muted:#8d8378;--line:rgba(33,30,26,.10);color-scheme:light;
+}
