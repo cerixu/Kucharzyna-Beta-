@@ -92,7 +92,7 @@ function startScreen(state){
 function screenContent(route,state){
   if(route==="start")return startScreen(state);
   const titles={
-    recipes:["Przepisy","Twoja baza przepisów, gotowa do pracy."],
+    recipes:["Receptury","Twoja baza receptur, gotowa do pracy."],
     cooking:["Kuchnia","Prowadź aktualne danie bez zbędnego klikania."],
     shopping:["Zakupy","Lista produktów zebranych z Twojej kuchni."],
     inventory:["Magazyn","Stany produktów i kontrola końcówek."],
