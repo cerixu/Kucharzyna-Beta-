@@ -1,7 +1,6 @@
 import{hydrate,subscribe,getState}from"./state.js";import{initRouter,navigate}from"./router.js";
-const NAV=[["start","home","Start"],["recipes","recipes","Receptury"],["shopping","shopping","Zakupy"],["inventory","inventory","Magazyn"],["settings","settings","Ustawienia"]];
+const app=document.querySelector("#app");
 const ICONS={home:"⌂",recipes:"▤",cooking:"◒",shopping:"□",inventory:"◇",calculator:"⌗",settings:"⚙",arrow:"›"};
-const NAV=[["start","home","Start"],["recipes","recipes","Receptury"],["shopping","shopping","Zakupy"],["inventory","inventory","Magazyn"],["settings","settings","Ustawienia"]];
 const QUICK=[["recipes","recipes","Receptury","Otwórz bazę przepisów"],["cooking","cooking","Gotowanie","Prowadź danie krok po kroku"],["shopping","shopping","Zakupy","Lista produktów na dziś"],["inventory","inventory","Magazyn","Stany i końcówki"]];
 function icon(name,extra=""){return '<span class="ui-icon '+extra+'">'+(ICONS[name]||"")+"</span>"}
 function stat(label,value,tone=""){return '<div class="home-stat '+tone+'"><b>'+value+'</b><span>'+label+"</span></div>"}
@@ -14,6 +13,11 @@ function screenContent(route,state){
  const titles={recipes:["Receptury","Twoja baza przepisów, gotowa do pracy."],cooking:["Gotowanie","Prowadź aktualne danie bez zbędnego klikania."],shopping:["Zakupy","Lista produktów zebranych z Twojej kuchni."],inventory:["Magazyn","Stany produktów i kontrola końcówek."],calculators:["Kalkulatory","Narzędzia do codziennej pracy w kuchni."],settings:["Ustawienia","Wygląd, dane i preferencje Kucharzyny."]};
  const [title,lead]=titles[route]; return '<section class="screen module-screen"><span class="section-kicker">KUCHARZYNA</span><h1 class="screen-title">'+title+'</h1><p class="screen-lead">'+lead+'</p><div class="empty-state"><h2>Moduł gotowy</h2><p>Kolejne funkcje dokładamy na czystej architekturze beta 0.1.</p></div></section>';
 }
-function render(state){const route=state.route;app.innerHTML='<header class="app-topbar"><div class="brand"><div class="brand-mark" aria-hidden="true">K</div><div class="brand-title">Kucharzyna</div></div><button class="topbar-action" type="button" data-route="settings" aria-label="Ustawienia">⚙️</button></header><main class="app-scroll" id="main-scroll">'+screenContent(route,state)+'</main><nav class="app-bottom-nav" aria-label="Główna nawigacja">'+NAV.map(([id,icon,label])=>'<button class="nav-item '+(route===id?"active":"")+'" data-route="'+id+'" type="button"><span class="nav-icon" aria-hidden="true">'+icon+'</span><span class="nav-label">'+label+'</span></button>').join("")+'</nav>';app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)))}
+function render(state){
+ const route=state.route;
+ const nav=NAV.map(([id,iconName,label])=>'<button class="nav-item '+(route===id?"active":"")+'" data-route="'+id+'" type="button"><span class="nav-icon">'+ICONS[iconName]+'</span><span class="nav-label">'+label+'</span></button>').join("");
+ app.innerHTML='<header class="app-topbar"><button class="brand-button" type="button" data-route="start" aria-label="Start"><span class="brand-mark">'+ICONS.cooking+'</span><span class="brand-title">Kucharzyna</span></button><button class="topbar-action" type="button" data-route="settings" aria-label="Ustawienia">'+ICONS.settings+'</button></header><main class="app-scroll" id="main-scroll">'+screenContent(route,state)+'</main><nav class="app-bottom-nav" aria-label="Główna nawigacja">'+nav+'</nav>';
+ app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)));
+}
 async function boot(){await hydrate();subscribe(render);initRouter(()=>render(getState()));if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{})}
 boot().catch(error=>{console.error(error);app.innerHTML='<main class="app-scroll"><section class="screen"><div class="empty-state"><h2>Nie udało się uruchomić Kucharzyny</h2><p>Odśwież aplikację.</p></div></section></main>'});
