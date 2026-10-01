@@ -12,7 +12,8 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    container: mcr.microsoft.com/playwright:v1.55.0-noble
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -21,12 +22,6 @@ jobs:
           node-version: 22
 
       - run: npm install
-
-      - name: Install Playwright WebKit dependencies
-        run: npx playwright install-deps webkit
-
-      - name: Install Playwright WebKit
-        run: npx playwright install webkit
 
       - name: Run iPhone E2E
         run: npx playwright test --project=iphone
