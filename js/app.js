@@ -1,4 +1,4 @@
-import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings}from"./state.js";import{initRouter,navigate}from"./router.js";
+import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
 
@@ -145,18 +145,30 @@ function recipeCards(recipes){
     '<span class="recipe-card-bottom"><span>'+r.time+'</span><span>'+r.ingredients.length+' składników</span></span>'+
   '</button>').join('');
 }
+function moduleCard(title,copy,action,label){return '<div class="module-card"><div><small>'+title+'</small><p>'+copy+'</p></div>'+(action?'<button class="button button-secondary" type="button" data-module-action="'+action+'">'+label+'</button>':'')+'</div>'}
+function cookingScreen(state){
+  const selected=state.recipes.find(r=>r.id===state.selectedRecipe)||state.recipes[0];
+  if(!selected)return '<section class="screen module-screen"><span class="section-kicker">KUCHNIA</span><h1 class="screen-title">Kuchnia</h1><p class="screen-lead">Najpierw dodaj recepturę.</p></section>';
+  return '<section class="screen module-screen"><span class="section-kicker">TRYB PRACY</span><h1 class="screen-title">Kuchnia</h1><p class="screen-lead">Pracuj krok po kroku bez szukania po recepturze.</p><div class="cook-hero"><small>AKTUALNA RECEPTURA</small><h2>'+selected.name+'</h2><span>'+selected.servings+' porcji · '+selected.time+'</span></div><ol class="steps-list cooking-steps">'+selected.steps.map(x=>'<li>'+x+'</li>').join('')+'</ol><button class="button button-primary button-block" type="button" data-route="recipes">Wybierz inną recepturę</button></section>';
+}
+function shoppingScreen(state){
+  const items=state.shopping;
+  return '<section class="screen module-screen"><div class="module-head"><div><span class="section-kicker">LISTA</span><h1 class="screen-title">Zakupy</h1><p class="screen-lead">Produkty, które trzeba kupić.</p></div></div><form class="quick-add-form" id="shopping-form"><input class="input" name="item" placeholder="Dodaj produkt..." autocomplete="off"><button class="button button-primary" type="submit">＋</button></form><div class="module-list">'+(items.length?items.map(x=>'<label class="list-row"><input type="checkbox" data-shopping-toggle="'+x.id+'" '+(x.purchased?'checked':'')+'><span>'+x.name+'</span><button type="button" class="row-remove" data-shopping-remove="'+x.id+'">×</button></label>').join(''):'<div class="empty-state"><h2>Lista jest pusta</h2><p>Dodaj pierwszy produkt.</p></div>')+'</div></section>';
+}
+function inventoryScreen(state){
+  return '<section class="screen module-screen"><span class="section-kicker">STANY</span><h1 class="screen-title">Magazyn</h1><p class="screen-lead">Produkty i ich aktualne ilości.</p><form class="quick-add-form" id="inventory-form"><input class="input" name="name" placeholder="Produkt..." autocomplete="off"><input class="input inventory-qty" name="qty" type="number" min="0" step="0.1" placeholder="Ilość"><input class="input inventory-unit" name="unit" value="g" placeholder="Jednostka"><button class="button button-primary" type="submit">＋</button></form><div class="module-list">'+(state.inventory.length?state.inventory.map(x=>'<div class="list-row"><span><b>'+x.name+'</b><small>'+x.qty+' '+x.unit+'</small></span><button type="button" class="row-remove" data-inventory-remove="'+x.id+'">×</button></div>').join(''):'<div class="empty-state"><h2>Magazyn jest pusty</h2><p>Dodaj produkt, żeby zacząć kontrolować stany.</p></div>')+'</div></section>';
+}
+function calculatorsScreen(){return '<section class="screen module-screen"><span class="section-kicker">NARZĘDZIA</span><h1 class="screen-title">Kalkulatory</h1><p class="screen-lead">Małe narzędzia do codziennej pracy.</p><div class="calculator-grid"><button class="module-card module-card-button" type="button" data-route="recipes"><div><small>SKALOWANIE</small><p>Przelicz dowolną recepturę na liczbę porcji.</p></div><span>→</span></button><div class="module-card"><div><small>JEDNOSTKI</small><p>Podstawowe przeliczenia ilości trzymamy tutaj jako bazę pod Kalkulator Pro.</p></div></div></div></section>'}
+function settingsScreen(state){return '<section class="screen module-screen"><span class="section-kicker">USTAWIENIA</span><h1 class="screen-title">Więcej</h1><p class="screen-lead">Wygląd i zachowanie Kucharzyny.</p><div class="settings-card"><div><b>Tryb ciemny</b><small>Interfejs dopasowany do pracy w kuchni.</small></div><button class="toggle '+(state.settings.theme==="dark"?'active':'')+'" type="button" id="theme-toggle" aria-label="Przełącz motyw"><span></span></button></div><div class="settings-card"><div><b>Alerty magazynu</b><small>Przygotowane pod kontrolę niskich stanów.</small></div><button class="toggle '+(state.settings.lowStockAlerts?'active':'')+'" type="button" id="stock-alert-toggle" aria-label="Przełącz alerty magazynu"><span></span></button></div></section>'}
 function screenContent(route,state){
   if(route==="start")return startScreen(state);
   if(route==="recipes")return state.editorMode?recipeEditor(state):recipeScreen(state);
-  const titles={
-    cooking:["Kuchnia","Prowadź aktualne danie bez zbędnego klikania."],
-    shopping:["Zakupy","Lista produktów zebranych z Twojej kuchni."],
-    inventory:["Magazyn","Stany produktów i kontrola końcówek."],
-    calculators:["Kalkulatory","Narzędzia do codziennej pracy w kuchni."],
-    settings:["Więcej","Wygląd, dane i preferencje Kucharzyny."]
-  };
-  const [title,lead]=titles[route]||titles.cooking;
-  return '<section class="screen module-screen"><span class="section-kicker">KUCHARZYNA</span><h1 class="screen-title">'+title+'</h1><p class="screen-lead">'+lead+'</p><div class="empty-state"><h2>Moduł gotowy</h2><p>Kolejne funkcje dokładamy na czystej architekturze beta 0.1.</p></div></section>';
+  if(route==="cooking")return cookingScreen(state);
+  if(route==="shopping")return shoppingScreen(state);
+  if(route==="inventory")return inventoryScreen(state);
+  if(route==="calculators")return calculatorsScreen();
+  if(route==="settings")return settingsScreen(state);
+  return startScreen(state);
 }
 
 function render(state){
@@ -170,6 +182,17 @@ function render(state){
     '<main class="app-scroll" id="main-scroll">'+screenContent(route,state)+'</main>'+
     '<nav class="app-bottom-nav" aria-label="Główna nawigacja">'+nav+"</nav>";
   app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)));
+  const shoppingForm=app.querySelector("#shopping-form");
+  if(shoppingForm)shoppingForm.addEventListener("submit",async e=>{e.preventDefault();const input=shoppingForm.elements.item;const name=input.value.trim();if(name){await saveShopping({name,purchased:false});}});
+  app.querySelectorAll("[data-shopping-toggle]").forEach(x=>x.addEventListener("change",()=>{const item=getState().shopping.find(i=>i.id===x.dataset.shoppingToggle);if(item)saveShopping({...item,purchased:x.checked})}));
+  app.querySelectorAll("[data-shopping-remove]").forEach(x=>x.addEventListener("click",()=>removeShopping(x.dataset.shoppingRemove)));
+  const inventoryForm=app.querySelector("#inventory-form");
+  if(inventoryForm)inventoryForm.addEventListener("submit",async e=>{e.preventDefault();const name=inventoryForm.elements.name.value.trim();if(name){await saveInventory({name,qty:Number(inventoryForm.elements.qty.value)||0,unit:inventoryForm.elements.unit.value.trim()||"g"});}});
+  app.querySelectorAll("[data-inventory-remove]").forEach(x=>x.addEventListener("click",()=>removeInventory(x.dataset.inventoryRemove)));
+  const themeToggle=app.querySelector("#theme-toggle");
+  if(themeToggle)themeToggle.addEventListener("click",()=>saveSettings({theme:getState().settings.theme==="dark"?"light":"dark"}));
+  const stockToggle=app.querySelector("#stock-alert-toggle");
+  if(stockToggle)stockToggle.addEventListener("click",()=>saveSettings({lowStockAlerts:!getState().settings.lowStockAlerts}));
   const addButton=app.querySelector(".recipe-add");
   if(addButton)addButton.addEventListener("click",()=>{getState().editorMode=true;render(getState())});
   const editorBack=app.querySelector("[data-editor-back]");
