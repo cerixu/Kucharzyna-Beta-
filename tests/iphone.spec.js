@@ -266,6 +266,22 @@ test("PRO inventory exposes EAN scanner fallback", async ({page})=>{
   await ean.fill("5901234123457");
   await page.getByRole("button",{name:"Użyj kodu"}).click();
   await expect(page.getByText("5901234123457",{exact:true})).toBeVisible();
+  await expect(page.locator("#inventory-form [name=ean]")).toHaveValue("5901234123457");
+  await expect(page.locator("#inventory-form [name=inventoryId]")).toHaveValue("");
+  await page.locator("#inventory-form [name=name]").fill("Testowy produkt EAN");
+  await page.locator("#inventory-form [name=qty]").fill("100");
+  await page.locator("#inventory-form [name=unit]").fill("szt.");
+  await page.locator("#inventory-form [name=minQty]").fill("10");
+  await page.locator("#inventory-form").getByRole("button",{name:"＋ Dodaj do magazynu"}).click();
+  await expect(page.getByText("Testowy produkt EAN",{exact:true})).toBeVisible();
+  await page.getByRole("button",{name:/Skanuj produkt/i}).click();
+  await page.locator("#barcode-ean").fill("5901234123457");
+  await page.getByRole("button",{name:"Użyj kodu"}).click();
+  await expect(page.getByText("Produkt już jest w magazynie",{exact:false})).toBeVisible();
+  await expect(page.locator("#inventory-form [name=inventoryId]")).not.toHaveValue("");
+  await expect(page.locator("#inventory-form [name=name]")).toHaveValue("Testowy produkt EAN");
+  await expect(page.locator("#inventory-form [name=qty]")).toHaveValue("100");
+  await expect(page.locator("#inventory-form [name=ean]")).toHaveValue("5901234123457");
 });
 
 
