@@ -46,3 +46,20 @@ test("Recipes search, filters and detail work",async({page})=>{
   await page.getByRole("button",{name:"‹ Receptury"}).click();
   await expect(page.getByRole("heading",{name:"Receptury"})).toBeVisible();
 });
+
+test("Recipe editor creates and saves a recipe",async({page})=>{
+  await page.goto("#/recipes");
+  await page.getByRole("button",{name:"Dodaj recepturę"}).click();
+  await expect(page.getByRole("heading",{name:"Nowa receptura"})).toBeVisible();
+  await page.getByLabel("Nazwa").fill("Testowa receptura");
+  await page.getByLabel("Region / kuchnia").fill("Polska");
+  await page.getByRole("button",{name:"＋ Dodaj"}).click();
+  await page.locator("[name=ingredientName]").nth(1).fill("masło");
+  await page.locator("[name=ingredientQty]").nth(1).fill("20");
+  await page.locator("[name=ingredientUnit]").nth(1).fill("g");
+  await page.getByRole("button",{name:"＋ Krok"}).click();
+  await page.locator("[name=step]").nth(1).fill("Wymieszaj składniki.");
+  await page.getByRole("button",{name:"Zapisz recepturę"}).click();
+  await expect(page.getByRole("heading",{name:"Testowa receptura"})).toBeVisible();
+  await expect(page.getByText("masło",{exact:true})).toBeVisible();
+});
