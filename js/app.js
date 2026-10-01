@@ -207,9 +207,9 @@ function render(state){
   const addMissing=app.querySelector("[data-add-missing]"); if(addMissing)addMissing.addEventListener("click",async()=>{const s=getState();const recipe=s.recipes.find(r=>r.id===s.cookingRecipe);if(!recipe)return;const added=await addMissingToShopping(recipe.id,s.recipeTargetServings||recipe.servings);addMissing.textContent=added.length?"✓ Dodano do zakupów":"✓ Braki już są na liście";addMissing.disabled=true;});
   app.querySelectorAll("[data-shopping-toggle]").forEach(x=>x.addEventListener("change",()=>{const item=getState().shopping.find(i=>i.id===x.dataset.shoppingToggle);if(item)saveShopping({...item,purchased:x.checked})}));
   app.querySelectorAll("[data-shopping-remove]").forEach(x=>x.addEventListener("click",()=>removeShopping(x.dataset.shoppingRemove)));
-  let scannerStream=null,scannerTimer=null;
+  let scannerStream=null,scannerTimer=null,scannerControls=null;
   const scannerPanel=app.querySelector("#scanner-panel");
-  const stopScanner=()=>{if(scannerTimer)clearTimeout(scannerTimer);scannerTimer=null;if(scannerStream){scannerStream.getTracks().forEach(track=>track.stop());scannerStream=null}const video=app.querySelector("#barcode-video");if(video)video.srcObject=null};
+  const stopScanner=()=>{if(scannerTimer)clearTimeout(scannerTimer);scannerTimer=null;if(scannerControls){try{scannerControls.stop()}catch(_){ }scannerControls=null}if(scannerStream){scannerStream.getTracks().forEach(track=>track.stop());scannerStream=null}const video=app.querySelector("#barcode-video");if(video)video.srcObject=null};
   const showScannerResult=(ean)=>{
     const clean=String(ean||"").replace(/\D/g,"").slice(0,14);
     const input=app.querySelector("#barcode-ean");if(input)input.value=clean;
@@ -219,23 +219,39 @@ function render(state){
   };
   const startScanner=async()=>{
     if(!scannerPanel)return;
+    stopScanner();
     scannerPanel.hidden=false;
     const status=app.querySelector("#scanner-status");
-    if(!("BarcodeDetector"in window)){if(status)status.textContent="Skanowanie aparatem niedostępne. Użyj EAN ręcznie.";return}
-    if(!navigator.mediaDevices?.getUserMedia){if(status)status.textContent="Kamera niedostępna. Użyj EAN ręcznie.";return}
     try{
       const video=app.querySelector("#barcode-video");
-      scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}}});
-      video.srcObject=scannerStream;await video.play();
-      const detector=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});
-      const scan=async()=>{
-        if(!scannerPanel.isConnected||scannerPanel.hidden)return;
-        try{const codes=await detector.detect(video);if(codes.length){showScannerResult(codes[0].rawValue);stopScanner();return}}catch(_){}
-        scannerTimer=setTimeout(scan,180);
-      };
+      if("BarcodeDetector"in window){
+        if(!navigator.mediaDevices?.getUserMedia)throw new Error("Kamera niedostępna");
+        scannerStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}});
+        video.srcObject=scannerStream;await video.play();
+        const detector=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});
+        const scan=async()=>{
+          if(!scannerPanel.isConnected||scannerPanel.hidden)return;
+          try{const codes=await detector.detect(video);if(codes.length){showScannerResult(codes[0].rawValue);stopScanner();return}}catch(_){}
+          scannerTimer=setTimeout(scan,180);
+        };
+        if(status)status.textContent="Skieruj aparat na kod kreskowy";
+        scan();
+        return;
+      }
+      const ZX=window.ZXingBrowser;
+      if(!ZX?.BrowserMultiFormatReader)throw new Error("Brak silnika skanowania");
+      const reader=new ZX.BrowserMultiFormatReader();
+      if(status)status.textContent="Włączam aparat…";
+      scannerControls=await reader.decodeFromVideoDevice(undefined,video,(result,error)=>{
+        if(result){showScannerResult(result.getText());stopScanner()}
+        else if(error&&error.name!=="NotFoundException"&&status)status.textContent="Skieruj aparat na kod kreskowy";
+      });
       if(status)status.textContent="Skieruj aparat na kod kreskowy";
-      scan();
-    }catch(error){if(status)status.textContent="Nie udało się uruchomić kamery. Użyj EAN ręcznie.";console.warn("Kucharzyna: scanner camera failed.",error)}
+    }catch(error){
+      stopScanner();
+      if(status)status.textContent="Nie udało się uruchomić kamery. Sprawdź dostęp do aparatu w iOS i spróbuj ponownie.";
+      console.warn("Kucharzyna: scanner camera failed.",error);
+    }
   };
   const scannerLaunch=app.querySelector("[data-open-scanner]");if(scannerLaunch)scannerLaunch.addEventListener("click",startScanner);
   const scannerClose=app.querySelector("[data-close-scanner]");if(scannerClose)scannerClose.addEventListener("click",()=>{stopScanner();scannerPanel.hidden=true});
@@ -341,6 +357,6 @@ async function boot(){
   subscribe(render);
   initRouter(()=>render(getState()));
   render(getState());
-  if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=20261001-9").catch(()=>{});
+  if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=20261001-10").catch(()=>{});
 }
 boot().catch(error=>{console.error(error);app.innerHTML='<main class="app-scroll"><section class="screen"><div class="empty-state"><h2>Nie udało się uruchomić Kucharzyny</h2><p>Odśwież aplikację.</p></div></section></main>'});
