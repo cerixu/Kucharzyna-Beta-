@@ -1,4 +1,4 @@
-import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe}from"./state.js";import{initRouter,navigate}from"./router.js";
+import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
 
@@ -112,6 +112,7 @@ function ingredientRow(i){
   return '<div class="editor-row ingredient-row"><input name="ingredientName" class="input" value="'+escapeHtml(i.name||"")+'" placeholder="Składnik"><input name="ingredientQty" class="input qty" inputmode="decimal" value="'+(i.qty??"")+'" placeholder="Ilość"><input name="ingredientUnit" class="input unit" value="'+escapeHtml(i.unit||"g")+'" placeholder="g"><button type="button" class="row-remove" aria-label="Usuń składnik">×</button></div>';
 }
 function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[x]));}
+function formatScaledQuantity(qty,factor){const n=Number(qty);if(!Number.isFinite(n))return qty;const value=n*factor;return Number.isInteger(value)?String(value):String(Number(value.toFixed(2)));}
 function recipeScreen(state){
   const recipes=state.recipes;
   const selected=recipes.find(r=>r.id===state.selectedRecipe);
@@ -121,9 +122,9 @@ function recipeScreen(state){
       '<span class="section-kicker">'+selected.category+' · '+selected.region+'</span>'+
       '<h1 class="screen-title">'+selected.name+'</h1>'+
       '<div class="recipe-meta"><span>'+selected.time+'</span><span>'+selected.servings+' porcji</span><span>'+selected.ingredients.length+' składników</span></div>'+
-      '<div class="recipe-detail-actions"><button class="button button-secondary" type="button" data-favorite="'+selected.id+'">'+(selected.favorite?'♥ Ulubione':'♡ Dodaj do ulubionych')+'</button><button class="button button-secondary" type="button" data-edit-recipe="'+selected.id+'">✎ Edytuj</button></div>'+
+      '<div class="scale-panel"><div><small>SKALOWANIE RECEPTURY</small><strong>Na ile porcji?</strong></div><div class="scale-controls"><button type="button" class="scale-step" data-scale-step="-1" aria-label="Zmniejsz liczbę porcji">−</button><input id="recipe-servings" class="scale-input" type="number" min="1" step="1" value="'+(state.recipeTargetServings||selected.servings)+'" aria-label="Docelowa liczba porcji"><button type="button" class="scale-step" data-scale-step="1" aria-label="Zwiększ liczbę porcji">＋</button></div><span class="scale-note">Bazowa receptura: '+selected.servings+' porcji</span></div><div class="recipe-detail-actions"><button class="button button-secondary" type="button" data-favorite="'+selected.id+'">'+(selected.favorite?'♥ Ulubione':'♡ Dodaj do ulubionych')+'</button><button class="button button-secondary" type="button" data-edit-recipe="'+selected.id+'">✎ Edytuj</button></div>'+
       '<div class="recipe-block"><div class="section-heading"><span><small>SKŁADNIKI</small><h2>Składniki</h2></span></div>'+
-      '<ul class="ingredient-list">'+selected.ingredients.map(i=>'<li><span>'+i.name+'</span><b>'+i.qty+' '+i.unit+'</b></li>').join('')+'</ul></div>'+
+      '<ul class="ingredient-list">'+selected.ingredients.map(i=>'<li><span>'+i.name+'</span><b>'+formatScaledQuantity(i.qty,(state.recipeTargetServings||selected.servings)/Math.max(1,Number(selected.servings)))+' '+i.unit+'</b></li>').join('')+'</ul></div>'+
       '<div class="recipe-block"><div class="section-heading"><span><small>PRACA</small><h2>Przygotowanie</h2></span></div>'+
       '<ol class="steps-list">'+selected.steps.map(x=>'<li>'+x+'</li>').join('')+'</ol></div>'+
     '</section>';
@@ -192,6 +193,13 @@ function render(state){
   app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
   app.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>toggleFavorite(b.dataset.favorite)));\n  app.querySelectorAll("[data-edit-recipe]").forEach(b=>b.addEventListener("click",()=>{getState().editorMode=true;render(getState())}));
   const back=app.querySelector("[data-recipe-back]"); if(back)back.addEventListener("click",()=>selectRecipe(null));
+  const scaleInput=app.querySelector("#recipe-servings");
+  if(scaleInput){
+    const applyScale=value=>{const next=Math.max(1,Math.round(Number(value)||1));setRecipeTargetServings(next)};
+    scaleInput.addEventListener("change",()=>applyScale(scaleInput.value));
+    scaleInput.addEventListener("input",()=>{if(scaleInput.value)applyScale(scaleInput.value)});
+    app.querySelectorAll("[data-scale-step]").forEach(button=>button.addEventListener("click",()=>applyScale(Number(scaleInput.value||1)+Number(button.dataset.scaleStep))));
+  }
   const recipeInput=app.querySelector("#recipe-search");
   if(recipeInput){
     const clear=app.querySelector("#recipe-search-clear");
