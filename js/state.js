@@ -98,5 +98,5 @@ if(!state.recipes.length){
   document.documentElement.dataset.theme=state.settings.theme;
   notify();
 }
-export async function saveSettings(value){state.settings={...state.settings,...value};document.documentElement.dataset.theme=state.settings.theme;await put("settings",{id:"app",value:state.settings});notify()}
+export async function saveSettings(value){state.settings={...state.settings,...value};document.documentElement.dataset.theme=state.settings.theme;notify();put("settings",{id:"app",value:state.settings}).catch(error=>console.warn("Kucharzyna: settings persistence failed.",error))}
 function notify(){for(const fn of listeners)fn(state)}
