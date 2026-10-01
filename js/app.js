@@ -1,7 +1,7 @@
 import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,setMode,isProMode,startCooking,setCookingStep,finishCooking,getRecipeStockStatus,consumeRecipeIngredients,addMissingToShopping,getRecipeFoodCost}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
-const APP_VERSION="v0.1.12";
+const APP_VERSION="v0.1.13";
 
 const NAV=[
   ["start","home","Start"],
@@ -237,7 +237,7 @@ function render(state){
       const video=app.querySelector("#barcode-video");
       if("BarcodeDetector"in window){
         if(!navigator.mediaDevices?.getUserMedia)throw new Error("Kamera niedostępna");
-        scannerStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}});
+        scannerStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}}});
         video.srcObject=scannerStream;await video.play();
         const detector=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});
         const scan=async()=>{
