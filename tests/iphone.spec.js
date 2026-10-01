@@ -224,3 +224,38 @@ test("Tryby PRO i AMATOR zmieniają dostępne funkcje",async({page})=>{
   await page.goto("#/inventory");
   await expect(page.getByRole("heading",{name:"Magazyn"})).toBeVisible();
 });
+
+test("User data is isolated between separate browser contexts",async({browser})=>{
+  const userA=await browser.newContext();
+  const userB=await browser.newContext();
+  const pageA=await userA.newPage();
+  const pageB=await userB.newPage();
+
+  await pageA.goto("#/recipes");
+  await pageA.getByRole("button",{name:"Dodaj recepturę"}).click();
+  await pageA.getByLabel("Nazwa").fill("Tylko Użytkownik A");
+  await pageA.getByLabel("Region / kuchnia").fill("Prywatne");
+  await pageA.locator("[name=ingredientName]").first().fill("test A");
+  await pageA.locator("[name=ingredientQty]").first().fill("1");
+  await pageA.locator("[name=ingredientUnit]").first().fill("szt.");
+  await pageA.getByRole("button",{name:"Zapisz recepturę"}).click();
+  await expect(pageA.getByRole("heading",{name:"Tylko Użytkownik A",exact:true})).toBeVisible();
+
+  await pageB.goto("#/recipes");
+  await expect(pageB.getByText("Tylko Użytkownik A",{exact:true})).toHaveCount(0);
+
+  await pageB.getByRole("button",{name:"Dodaj recepturę"}).click();
+  await pageB.getByLabel("Nazwa").fill("Tylko Użytkownik B");
+  await pageB.locator("[name=ingredientName]").first().fill("test B");
+  await pageB.locator("[name=ingredientQty]").first().fill("1");
+  await pageB.locator("[name=ingredientUnit]").first().fill("szt.");
+  await pageB.getByRole("button",{name:"Zapisz recepturę"}).click();
+  await expect(pageB.getByRole("heading",{name:"Tylko Użytkownik B",exact:true})).toBeVisible();
+
+  await pageA.goto("#/recipes");
+  await expect(pageA.getByText("Tylko Użytkownik A",{exact:true})).toBeVisible();
+  await expect(pageA.getByText("Tylko Użytkownik B",{exact:true})).toHaveCount(0);
+
+  await userA.close();
+  await userB.close();
+});
