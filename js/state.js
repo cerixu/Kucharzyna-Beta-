@@ -8,6 +8,7 @@ const DEFAULT_RECIPES=[
 
 export function getState(){return state}export function subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn)}
 export function selectRecipe(id){state.selectedRecipe=id;notify()}
+export async function saveRecipe(recipe){const value={...recipe,id:recipe.id||("recipe-"+Date.now()),favorite:Boolean(recipe.favorite)};await put("recipes",value);const index=state.recipes.findIndex(x=>x.id===value.id);if(index>=0)state.recipes[index]=value;else state.recipes.push(value);state.selectedRecipe=value.id;notify();return value}
 export async function toggleFavorite(id){const recipe=state.recipes.find(x=>x.id===id);if(!recipe)return;recipe.favorite=!recipe.favorite;await put("recipes",recipe);notify()}
 export function setRoute(route){state.route=route;if(route!=="recipes")state.selectedRecipe=null;notify()}export function update(partial){Object.assign(state,partial);notify()}
 export async function hydrate(){
