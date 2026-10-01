@@ -1,4 +1,4 @@
-import{hydrate,subscribe,getState}from"./state.js";import{initRouter,navigate}from"./router.js";
+import{hydrate,subscribe,getState,selectRecipe,toggleFavorite}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
 
@@ -89,17 +89,49 @@ function startScreen(state){
   "</section>";
 }
 
+function recipeScreen(state){
+  const recipes=state.recipes;
+  const selected=recipes.find(r=>r.id===state.selectedRecipe);
+  if(selected){
+    return '<section class="screen module-screen recipe-detail">'+
+      '<button class="back-link" type="button" data-recipe-back>‹ Receptury</button>'+
+      '<span class="section-kicker">'+selected.category+' · '+selected.region+'</span>'+
+      '<h1 class="screen-title">'+selected.name+'</h1>'+
+      '<div class="recipe-meta"><span>'+selected.time+'</span><span>'+selected.servings+' porcji</span><span>'+selected.ingredients.length+' składników</span></div>'+
+      '<div class="recipe-detail-actions"><button class="button button-secondary" type="button" data-favorite="'+selected.id+'">'+(selected.favorite?'♥ Ulubione':'♡ Dodaj do ulubionych')+'</button></div>'+
+      '<div class="recipe-block"><div class="section-heading"><span><small>SKŁADNIKI</small><h2>Składniki</h2></span></div>'+
+      '<ul class="ingredient-list">'+selected.ingredients.map(i=>'<li><span>'+i.name+'</span><b>'+i.qty+' '+i.unit+'</b></li>').join('')+'</ul></div>'+
+      '<div class="recipe-block"><div class="section-heading"><span><small>PRACA</small><h2>Przygotowanie</h2></span></div>'+
+      '<ol class="steps-list">'+selected.steps.map(x=>'<li>'+x+'</li>').join('')+'</ol></div>'+
+    '</section>';
+  }
+  const categories=["Wszystkie",...new Set(recipes.map(r=>r.category))];
+  return '<section class="screen module-screen recipes-screen">'+
+    '<div class="module-head"><div><span class="section-kicker">KUCHARZYNA</span><h1 class="screen-title">Receptury</h1><p class="screen-lead">Twoja baza receptur, gotowa do pracy.</p></div><button class="button button-primary recipe-add" type="button" aria-label="Dodaj recepturę">＋</button></div>'+
+    '<label class="search-field recipes-search">'+icon("search")+'<input id="recipe-search" class="input" type="search" placeholder="Szukaj receptury lub składnika..." autocomplete="off"><button id="recipe-search-clear" class="search-clear" type="button" aria-label="Wyczyść" hidden>×</button></label>'+
+    '<div class="chip-row recipe-filters">'+categories.map((x,i)=>'<button class="chip '+(i===0?'active':'')+'" type="button" data-category="'+x+'">'+x+'</button>').join('')+'</div>'+
+    '<div class="recipe-results" id="recipe-results">'+recipeCards(recipes)+'</div>'+
+  '</section>';
+}
+function recipeCards(recipes){
+  if(!recipes.length)return '<div class="empty-state"><h2>Brak receptur</h2><p>Dodaj pierwszą recepturę i zacznij budować swoją bazę.</p></div>';
+  return recipes.map(r=>'<button class="recipe-card" type="button" data-recipe="'+r.id+'">'+
+    '<span class="recipe-card-top"><span class="badge">'+r.category+'</span><span class="recipe-heart">'+(r.favorite?'♥':'♡')+'</span></span>'+
+    '<span class="recipe-card-title">'+r.name+'</span><span class="recipe-card-region">'+r.region+'</span>'+
+    '<span class="recipe-card-bottom"><span>'+r.time+'</span><span>'+r.ingredients.length+' składników</span></span>'+
+  '</button>').join('');
+}
 function screenContent(route,state){
   if(route==="start")return startScreen(state);
+  if(route==="recipes")return recipeScreen(state);
   const titles={
-    recipes:["Receptury","Twoja baza receptur, gotowa do pracy."],
     cooking:["Kuchnia","Prowadź aktualne danie bez zbędnego klikania."],
     shopping:["Zakupy","Lista produktów zebranych z Twojej kuchni."],
     inventory:["Magazyn","Stany produktów i kontrola końcówek."],
     calculators:["Kalkulatory","Narzędzia do codziennej pracy w kuchni."],
     settings:["Więcej","Wygląd, dane i preferencje Kucharzyny."]
   };
-  const [title,lead]=titles[route]||titles.start;
+  const [title,lead]=titles[route]||titles.cooking;
   return '<section class="screen module-screen"><span class="section-kicker">KUCHARZYNA</span><h1 class="screen-title">'+title+'</h1><p class="screen-lead">'+lead+'</p><div class="empty-state"><h2>Moduł gotowy</h2><p>Kolejne funkcje dokładamy na czystej architekturze beta 0.1.</p></div></section>';
 }
 
@@ -114,6 +146,24 @@ function render(state){
     '<main class="app-scroll" id="main-scroll">'+screenContent(route,state)+'</main>'+
     '<nav class="app-bottom-nav" aria-label="Główna nawigacja">'+nav+"</nav>";
   app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)));
+  app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
+  app.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>toggleFavorite(b.dataset.favorite)));
+  const back=app.querySelector("[data-recipe-back]"); if(back)back.addEventListener("click",()=>selectRecipe(null));
+  const recipeInput=app.querySelector("#recipe-search");
+  if(recipeInput){
+    const clear=app.querySelector("#recipe-search-clear");
+    let category="Wszystkie";
+    const apply=()=>{
+      const q=recipeInput.value.trim().toLocaleLowerCase("pl-PL");
+      const filtered=getState().recipes.filter(r=>(category==="Wszystkie"||r.category===category)&&(!q||(r.name+" "+r.region+" "+r.category+" "+r.ingredients.map(i=>i.name).join(" ")).toLocaleLowerCase("pl-PL").includes(q)));
+      app.querySelector("#recipe-results").innerHTML=recipeCards(filtered);
+      app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
+      clear.hidden=!recipeInput.value;
+    };
+    recipeInput.addEventListener("input",apply);
+    clear.addEventListener("click",()=>{recipeInput.value="";apply();recipeInput.focus()});
+    app.querySelectorAll("[data-category]").forEach(chip=>chip.addEventListener("click",()=>{category=chip.dataset.category;app.querySelectorAll("[data-category]").forEach(x=>x.classList.toggle("active",x===chip));apply()}));
+  }
   const input=app.querySelector("#home-search-input");
   const clear=app.querySelector(".home-search-clear");
   if(input){
