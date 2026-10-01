@@ -26,7 +26,8 @@ const ICONS={
   calc:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2M8 18h8"/></svg>',
   heart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.7c0 5.1-8.8 10.4-8.8 10.4S3.2 13.8 3.2 8.7A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.6z"/></svg>',
   settings:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6z"/><path d="m19.4 15 .1.1-1.6 2.7-.2-.1a2.1 2.1 0 0 0-2.5.2l-.2.2a2.1 2.1 0 0 0-.6 2v.2h-3.2v-.2a2.1 2.1 0 0 0-1.5-2l-.2-.1a2.1 2.1 0 0 0-2.5-.2l-.2.1-1.6-2.7.1-.1a2.1 2.1 0 0 0 .9-2.3l-.1-.3a2.1 2.1 0 0 0-1.6-1.7h-.2V7.5h.2A2.1 2.1 0 0 0 6 5.8l.1-.3a2.1 2.1 0 0 0-.9-2.3l-.1-.1 1.6-2.7.2.1a2.1 2.1 0 0 0 2.5-.2l.2-.1a2.1 2.1 0 0 0 1.5-2V0h3.2v.2a2.1 2.1 0 0 0 .6 2l.2.1a2.1 2.1 0 0 0 2.5.2l.2-.1 1.6 2.7-.1.1a2.1 2.1 0 0 0-.9 2.3l.1.3a2.1 2.1 0 0 0 1.6 1.7h.2v3.2h-.2a2.1 2.1 0 0 0-1.6 1.7l-.1.3a2.1 2.1 0 0 0 .9 2.3z" transform="translate(0 3) scale(.76)"/></svg>',
-  arrow:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>'
+  arrow:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>',
+  barcode:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5v14M7 5v14M10 5v14M14 5v14M17 5v14M20 5v14"/></svg>'
 };
 
 const QUICK=[
@@ -174,7 +175,7 @@ function refrigeratorScreen(state){
 function inventoryScreen(state){
   const lowCount=state.inventory.filter(x=>state.settings.lowStockAlerts&&Number(x.minQty)>0&&Number(x.qty)<=Number(x.minQty)).length;
   return '<section class="screen module-screen"><div class="module-head"><div><span class="section-kicker">STANY</span><h1 class="screen-title">Magazyn</h1><p class="screen-lead">Kontroluj ilości, minima i końcówki produktów.</p></div><div class="inventory-head-actions"><span class="inventory-count">'+state.inventory.length+'</span><button class="toggle inventory-alert-toggle '+(state.settings.lowStockAlerts?"active":"")+'" type="button" id="inventory-alert-toggle" aria-label="Przełącz alerty magazynu"><span></span></button></div></div>'+
-    '<form class="inventory-form" id="inventory-form"><input class="input" name="name" placeholder="Produkt..." autocomplete="off" required><div class="inventory-form-grid"><input class="input" name="qty" type="number" min="0" step="0.1" placeholder="Stan" required><input class="input" name="unit" value="g" placeholder="Jednostka"><input class="input" name="minQty" type="number" min="0" step="0.1" placeholder="Minimum"></div><label class="inventory-price-field">Cena zakupu za ten stan (zł)<input class="input" name="purchasePrice" type="number" min="0" step="0.01" placeholder="np. 25.00"></label><button class="button button-primary button-block" type="submit">＋ Dodaj do magazynu</button></form>'+
+    '<button class="module-card module-card-button inventory-scanner-launch" type="button" data-open-scanner><div><small>EAN / KOD KRESKOWY</small><p>Skanuj produkt aparatem albo wpisz kod ręcznie.</p></div><span>'+icon("barcode")+'</span></button><div class="scanner-panel" id="scanner-panel" hidden><div class="scanner-head"><div><small>SKANER</small><b>Dodaj produkt po EAN</b></div><button class="button button-secondary" type="button" data-close-scanner>Zamknij</button></div><div class="scanner-preview"><video id="barcode-video" playsinline muted></video><div class="scanner-frame"></div><span class="scanner-status" id="scanner-status">Uruchamiam kamerę…</span></div><div class="scanner-manual"><label>EAN<input class="input" id="barcode-ean" inputmode="numeric" autocomplete="off" placeholder="np. 5901234123457"></label><button class="button button-secondary" type="button" data-apply-ean>Użyj kodu</button></div><div class="scanner-result" id="scanner-result" hidden></div></div><form class="inventory-form" id="inventory-form"><input class="input" name="name" placeholder="Produkt..." autocomplete="off" required><div class="inventory-form-grid"><input class="input" name="qty" type="number" min="0" step="0.1" placeholder="Stan" required><input class="input" name="unit" value="g" placeholder="Jednostka"><input class="input" name="minQty" type="number" min="0" step="0.1" placeholder="Minimum"></div><label class="inventory-ean-field">EAN / kod<input class="input" name="ean" inputmode="numeric" autocomplete="off" placeholder="opcjonalnie"></label><label class="inventory-price-field">Cena zakupu za ten stan (zł)<input class="input" name="purchasePrice" type="number" min="0" step="0.01" placeholder="np. 25.00"></label><button class="button button-primary button-block" type="submit">＋ Dodaj do magazynu</button></form>'+
     (lowCount?'<div class="inventory-alert"><b>⚠ Niskie stany: '+lowCount+'</b><span>Produkty poniżej ustawionego minimum.</span></div>':'')+
     '<div class="module-list inventory-list">'+(state.inventory.length?state.inventory.map(x=>{const low=state.settings.lowStockAlerts&&Number(x.minQty)>0&&Number(x.qty)<=Number(x.minQty);return '<article class="inventory-row '+(low?'is-low':'')+'"><div class="inventory-row-head"><div><b>'+escapeHtml(x.name)+'</b><small>'+x.qty+' '+escapeHtml(x.unit)+' · minimum '+(Number(x.minQty)||0)+' '+escapeHtml(x.unit)+(Number(x.purchasePrice)>0?' · '+formatMoney(x.purchasePrice):'')+'</small></div>'+(low?'<span class="inventory-badge">NISKI STAN</span>':'')+'</div><div class="inventory-row-controls"><button type="button" class="inventory-step" data-inventory-step="-1" data-inventory-id="'+x.id+'" aria-label="Zmniejsz '+escapeHtml(x.name)+'">−</button><input class="input inventory-current" data-inventory-qty="'+x.id+'" type="number" min="0" step="0.1" value="'+x.qty+'" aria-label="Stan '+escapeHtml(x.name)+'"><button type="button" class="inventory-step" data-inventory-step="1" data-inventory-id="'+x.id+'" aria-label="Zwiększ '+escapeHtml(x.name)+'">＋</button><input class="input inventory-min" data-inventory-min="'+x.id+'" type="number" min="0" step="0.1" value="'+(Number(x.minQty)||0)+'" aria-label="Minimum '+escapeHtml(x.name)+'"><button type="button" class="row-remove" data-inventory-remove="'+x.id+'" aria-label="Usuń '+escapeHtml(x.name)+'">×</button></div></article>'}).join(''):'<div class="empty-state"><h2>Magazyn jest pusty</h2><p>Dodaj pierwszy produkt i ustaw mu minimum.</p></div>')+'</div></section>';
 }
@@ -207,8 +208,43 @@ function render(state){
   const addMissing=app.querySelector("[data-add-missing]"); if(addMissing)addMissing.addEventListener("click",async()=>{const s=getState();const recipe=s.recipes.find(r=>r.id===s.cookingRecipe);if(!recipe)return;const added=await addMissingToShopping(recipe.id,s.recipeTargetServings||recipe.servings);addMissing.textContent=added.length?"✓ Dodano do zakupów":"✓ Braki już są na liście";addMissing.disabled=true;});
   app.querySelectorAll("[data-shopping-toggle]").forEach(x=>x.addEventListener("change",()=>{const item=getState().shopping.find(i=>i.id===x.dataset.shoppingToggle);if(item)saveShopping({...item,purchased:x.checked})}));
   app.querySelectorAll("[data-shopping-remove]").forEach(x=>x.addEventListener("click",()=>removeShopping(x.dataset.shoppingRemove)));
+  let scannerStream=null,scannerTimer=null;
+  const scannerPanel=app.querySelector("#scanner-panel");
+  const stopScanner=()=>{if(scannerTimer)clearTimeout(scannerTimer);scannerTimer=null;if(scannerStream){scannerStream.getTracks().forEach(track=>track.stop());scannerStream=null}const video=app.querySelector("#barcode-video");if(video)video.srcObject=null};
+  const showScannerResult=(ean)=>{
+    const clean=String(ean||"").replace(/\D/g,"").slice(0,14);
+    const input=app.querySelector("#barcode-ean");if(input)input.value=clean;
+    const result=app.querySelector("#scanner-result");
+    if(result){result.hidden=!clean;result.innerHTML=clean?'<b>Kod odczytany</b><span>'+escapeHtml(clean)+'</span><small>Uzupełnij nazwę produktu poniżej i zapisz go do magazynu.</small>':'';}
+    const status=app.querySelector("#scanner-status");if(status)status.textContent=clean?"✓ EAN odczytany":"Wpisz kod ręcznie";
+  };
+  const startScanner=async()=>{
+    if(!scannerPanel)return;
+    scannerPanel.hidden=false;
+    const status=app.querySelector("#scanner-status");
+    if(!("BarcodeDetector"in window)){if(status)status.textContent="Skanowanie aparatem niedostępne. Użyj EAN ręcznie.";return}
+    if(!navigator.mediaDevices?.getUserMedia){if(status)status.textContent="Kamera niedostępna. Użyj EAN ręcznie.";return}
+    try{
+      const video=app.querySelector("#barcode-video");
+      scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}}});
+      video.srcObject=scannerStream;await video.play();
+      const detector=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});
+      const scan=async()=>{
+        if(!scannerPanel.isConnected||scannerPanel.hidden)return;
+        try{const codes=await detector.detect(video);if(codes.length){showScannerResult(codes[0].rawValue);stopScanner();return}}catch(_){}
+        scannerTimer=setTimeout(scan,180);
+      };
+      if(status)status.textContent="Skieruj aparat na kod kreskowy";
+      scan();
+    }catch(error){if(status)status.textContent="Nie udało się uruchomić kamery. Użyj EAN ręcznie.";console.warn("Kucharzyna: scanner camera failed.",error)}
+  };
+  const scannerLaunch=app.querySelector("[data-open-scanner]");if(scannerLaunch)scannerLaunch.addEventListener("click",startScanner);
+  const scannerClose=app.querySelector("[data-close-scanner]");if(scannerClose)scannerClose.addEventListener("click",()=>{stopScanner();scannerPanel.hidden=true});
+  const applyEan=app.querySelector("[data-apply-ean]");if(applyEan)applyEan.addEventListener("click",()=>showScannerResult(app.querySelector("#barcode-ean")?.value));
+  app.querySelector("#barcode-ean")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();showScannerResult(e.currentTarget.value)}});
+
   const inventoryForm=app.querySelector("#inventory-form");
-  if(inventoryForm)inventoryForm.addEventListener("submit",async e=>{e.preventDefault();const name=inventoryForm.elements.name.value.trim();if(name){await saveInventory({name,qty:Number(inventoryForm.elements.qty.value)||0,unit:inventoryForm.elements.unit.value.trim()||"g",minQty:Number(inventoryForm.elements.minQty.value)||0,purchasePrice:Number(inventoryForm.elements.purchasePrice.value)||0});}});
+  if(inventoryForm)inventoryForm.addEventListener("submit",async e=>{e.preventDefault();const name=inventoryForm.elements.name.value.trim();if(name){await saveInventory({name,qty:Number(inventoryForm.elements.qty.value)||0,unit:inventoryForm.elements.unit.value.trim()||"g",minQty:Number(inventoryForm.elements.minQty.value)||0,purchasePrice:Number(inventoryForm.elements.purchasePrice.value)||0,ean:String(inventoryForm.elements.ean?.value||"").replace(/\D/g,"").slice(0,14)});}});
   app.querySelectorAll("[data-inventory-remove]").forEach(x=>x.addEventListener("click",()=>removeInventory(x.dataset.inventoryRemove)));
   app.querySelectorAll("[data-inventory-step]").forEach(x=>x.addEventListener("click",()=>{const item=getState().inventory.find(i=>i.id===x.dataset.inventoryId);if(item)saveInventory({...item,qty:Number(item.qty||0)+Number(x.dataset.inventoryStep)})}));
   app.querySelectorAll("[data-inventory-qty]").forEach(x=>x.addEventListener("change",()=>{const item=getState().inventory.find(i=>i.id===x.dataset.inventoryQty);if(item)saveInventory({...item,qty:Number(x.value)||0})}));
