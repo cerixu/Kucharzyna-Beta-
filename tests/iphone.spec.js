@@ -82,10 +82,10 @@ test("Mam Mąkę calculator calculates dough from flour",async({page})=>{
   await expect(page.getByText("Kalkulator ciasta")).toBeVisible();
   await expect(page.locator("#dough-flour")).toHaveValue("7500");
   await expect(page.getByText("4875 g",{exact:true})).toBeVisible();
-  await expect(page.getByText("5085 g",{exact:true})).toBeVisible();
+  await expect(page.getByText("12592.5 g",{exact:true})).toBeVisible();
   await page.locator("#dough-hydration").fill("70");
   await expect(page.getByText("5250 g",{exact:true})).toBeVisible();
-  await expect(page.getByText("5460 g",{exact:true})).toBeVisible();
+  await expect(page.getByText("12967.5 g",{exact:true})).toBeVisible();
 });
 
 test("Kuchnia prowadzi przez kroki receptury",async({page})=>{
