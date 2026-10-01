@@ -118,7 +118,7 @@ function formatMoney(value){return new Intl.NumberFormat("pl-PL",{style:"currenc
 function formatPercent(value){return (Math.round(Number(value)*10)/10).toLocaleString("pl-PL")+"%"}
 function recipeScreen(state,favoritesOnly=false){
   const recipes=favoritesOnly?state.recipes.filter(r=>r.favorite):state.recipes;
-  const selected=recipes.find(r=>r.id===state.selectedRecipe);
+  const selected=favoritesOnly?null:recipes.find(r=>r.id===state.selectedRecipe);
   if(selected){
     const food=getRecipeFoodCost(selected.id,state.recipeTargetServings||selected.servings);
     return '<section class="screen module-screen recipe-detail">'+
