@@ -136,6 +136,23 @@ test("Kuchnia rozlicza zużyte składniki z magazynu",async({page})=>{
   await expect(pecorino.locator("[data-inventory-qty]")).toHaveValue("35");
 });
 
+test("Braki receptury trafiają do zakupów z dokładną ilością",async({page})=>{
+  await page.goto("#/inventory");
+  const form=page.locator("#inventory-form");
+  await form.locator("[name=name]").fill("guanciale");
+  await form.locator("[name=qty]").fill("30");
+  await form.locator("[name=unit]").fill("g");
+  await form.getByRole("button",{name:"＋ Dodaj do magazynu"}).click();
+  await page.goto("#/recipes");
+  await page.locator(".recipe-card").filter({hasText:"Spaghetti alla Carbonara"}).click();
+  await page.getByRole("button",{name:"👨‍🍳 Zacznij gotowanie"}).click();
+  await expect(page.getByText(/brakuje 20 g/)).toBeVisible();
+  await page.getByRole("button",{name:"＋ Dodaj braki do zakupów"}).click();
+  await expect(page.getByRole("button",{name:"✓ Dodano do zakupów"})).toBeDisabled();
+  await page.goto("#/shopping");
+  await expect(page.getByText("guanciale · 20 g",{exact:true})).toBeVisible();
+});
+
 test("Magazyn obsługuje minima, alerty i edycję stanu",async({page})=>{
   await page.goto("#/inventory");
   await expect(page.getByRole("heading",{name:"Magazyn",exact:true})).toBeVisible();
