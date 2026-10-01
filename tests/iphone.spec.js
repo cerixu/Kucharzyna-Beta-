@@ -30,3 +30,19 @@ test("Start search control is usable",async({page})=>{
   await input.press("Enter");
   await expect(page.getByRole("heading",{name:"Receptury"})).toBeVisible();
 });
+
+test("Recipes search, filters and detail work",async({page})=>{
+  await page.goto("#/recipes");
+  await expect(page.getByRole("heading",{name:"Receptury"})).toBeVisible();
+  await expect(page.locator(".recipe-card")).toHaveCount(3);
+  const input=page.getByPlaceholder("Szukaj receptury lub składnika...");
+  await input.fill("guanciale");
+  await expect(page.locator(".recipe-card")).toHaveCount(1);
+  await page.locator(".recipe-card").click();
+  await expect(page.getByRole("heading",{name:"Spaghetti alla Carbonara"})).toBeVisible();
+  await expect(page.getByText("guanciale",{exact:true})).toBeVisible();
+  await page.getByRole("button",{name:/Dodaj do ulubionych/}).click();
+  await expect(page.getByRole("button",{name:/Ulubione/})).toBeVisible();
+  await page.getByRole("button",{name:"‹ Receptury"}).click();
+  await expect(page.getByRole("heading",{name:"Receptury"})).toBeVisible();
+});
