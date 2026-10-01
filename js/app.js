@@ -1,4 +1,4 @@
-import{hydrate,subscribe,getState,selectRecipe,toggleFavorite}from"./state.js";import{initRouter,navigate}from"./router.js";
+import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
 
@@ -89,6 +89,29 @@ function startScreen(state){
   "</section>";
 }
 
+function recipeEditor(state){
+  const existing=state.selectedRecipe?state.recipes.find(r=>r.id===state.selectedRecipe):null;
+  const recipe=existing||{id:null,name:"",category:"Pizza",region:"",time:"",servings:1,favorite:false,ingredients:[{name:"",qty:"",unit:"g"}],steps:[""],notes:""};
+  return '<section class="screen module-screen recipe-editor">'+
+    '<button class="back-link" type="button" data-editor-back>‹ Receptury</button>'+
+    '<div class="section-kicker">EDYTOR RECEPTURY</div><h1 class="screen-title">'+(existing?'Edytuj recepturę':'Nowa receptura')+'</h1>'+
+    '<form id="recipe-form">'+
+      '<div class="form-card"><label>Nazwa<input class="input" name="name" required value="'+escapeHtml(recipe.name)+'" placeholder="np. Carbonara"></label>'+
+      '<div class="form-grid"><label>Kategoria<select class="input" name="category">'+["Pizza","Pasta","Piekarnia","Warzywa","Mięso","Ryby","Desery","Inne"].map(x=>'<option '+(x===recipe.category?'selected':'')+'>'+x+'</option>').join('')+'</select></label>'+
+      '<label>Porcje<input class="input" name="servings" type="number" min="1" step="1" value="'+recipe.servings+'"></label></div>'+
+      '<div class="form-grid"><label>Region / kuchnia<input class="input" name="region" value="'+escapeHtml(recipe.region||"")+'" placeholder="np. Lazio, Włochy"></label>'+
+      '<label>Czas<input class="input" name="time" value="'+escapeHtml(recipe.time||"")+'" placeholder="np. 25 min"></label></div></div>'+
+      '<div class="form-card"><div class="editor-section-head"><h2>Składniki</h2><button class="button button-secondary" type="button" id="add-ingredient">＋ Dodaj</button></div><div id="ingredient-editor">'+recipe.ingredients.map(ingredientRow).join('')+'</div></div>'+
+      '<div class="form-card"><div class="editor-section-head"><h2>Przygotowanie</h2><button class="button button-secondary" type="button" id="add-step">＋ Krok</button></div><div id="step-editor">'+recipe.steps.map((x,i)=>'<div class="editor-row step-row"><span class="row-number">'+(i+1)+'</span><textarea name="step" rows="2" placeholder="Opisz kolejny krok...">'+escapeHtml(x)+'</textarea><button type="button" class="row-remove" aria-label="Usuń krok">×</button></div>').join('')+'</div></div>'+
+      '<div class="form-card"><label>Własne uwagi<textarea class="notes-input" name="notes" rows="4" placeholder="Notatki, zmiany, uwagi z kuchni...">'+escapeHtml(recipe.notes||"")+'</textarea></label></div>'+
+      '<button class="button button-primary button-block save-recipe" type="submit">Zapisz recepturę</button>'+
+    '</form>'+
+  '</section>';
+}
+function ingredientRow(i){
+  return '<div class="editor-row ingredient-row"><input name="ingredientName" class="input" value="'+escapeHtml(i.name||"")+'" placeholder="Składnik"><input name="ingredientQty" class="input qty" inputmode="decimal" value="'+(i.qty??"")+'" placeholder="Ilość"><input name="ingredientUnit" class="input unit" value="'+escapeHtml(i.unit||"g")+'" placeholder="g"><button type="button" class="row-remove" aria-label="Usuń składnik">×</button></div>';
+}
+function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[x]));}
 function recipeScreen(state){
   const recipes=state.recipes;
   const selected=recipes.find(r=>r.id===state.selectedRecipe);
@@ -123,7 +146,7 @@ function recipeCards(recipes){
 }
 function screenContent(route,state){
   if(route==="start")return startScreen(state);
-  if(route==="recipes")return recipeScreen(state);
+  if(route==="recipes")return state.editorMode?recipeEditor(state):recipeScreen(state);
   const titles={
     cooking:["Kuchnia","Prowadź aktualne danie bez zbędnego klikania."],
     shopping:["Zakupy","Lista produktów zebranych z Twojej kuchni."],
@@ -146,6 +169,26 @@ function render(state){
     '<main class="app-scroll" id="main-scroll">'+screenContent(route,state)+'</main>'+
     '<nav class="app-bottom-nav" aria-label="Główna nawigacja">'+nav+"</nav>";
   app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)));
+  const addButton=app.querySelector(".recipe-add");
+  if(addButton)addButton.addEventListener("click",()=>{getState().editorMode=true;render(getState())});
+  const editorBack=app.querySelector("[data-editor-back]");
+  if(editorBack)editorBack.addEventListener("click",()=>{getState().editorMode=false;selectRecipe(null)});
+  const ingredientEditor=app.querySelector("#ingredient-editor");
+  if(ingredientEditor){
+    app.querySelector("#add-ingredient").addEventListener("click",()=>{ingredientEditor.insertAdjacentHTML("beforeend",ingredientRow({name:"",qty:"",unit:"g"}));bindEditorRemovers()});
+    app.querySelector("#add-step").addEventListener("click",()=>{app.querySelector("#step-editor").insertAdjacentHTML("beforeend",'<div class="editor-row step-row"><span class="row-number">+</span><textarea name="step" rows="2" placeholder="Opisz kolejny krok..."></textarea><button type="button" class="row-remove" aria-label="Usuń krok">×</button></div>');bindEditorRemovers()});
+    bindEditorRemovers();
+    const form=app.querySelector("#recipe-form");
+    form.addEventListener("submit",async e=>{
+      e.preventDefault();
+      const fd=new FormData(form);
+      const ingredients=[...form.querySelectorAll(".ingredient-row")].map(row=>({name:row.querySelector("[name=ingredientName]").value.trim(),qty:row.querySelector("[name=ingredientQty]").value.trim(),unit:row.querySelector("[name=ingredientUnit]").value.trim()||"g"})).filter(x=>x.name);
+      const steps=[...form.querySelectorAll("[name=step]")].map(x=>x.value.trim()).filter(Boolean);
+      const recipe={id:getState().selectedRecipe||null,name:String(fd.get("name")||"").trim(),category:String(fd.get("category")||"Inne"),region:String(fd.get("region")||"").trim(),time:String(fd.get("time")||"").trim(),servings:Number(fd.get("servings")||1),favorite:false,ingredients,steps,notes:String(fd.get("notes")||"").trim()};
+      const old=getState().recipes.find(x=>x.id===recipe.id); if(old)recipe.favorite=old.favorite;
+      await saveRecipe(recipe);getState().editorMode=false;
+    });
+  }
   app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
   app.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>toggleFavorite(b.dataset.favorite)));
   const back=app.querySelector("[data-recipe-back]"); if(back)back.addEventListener("click",()=>selectRecipe(null));
@@ -172,6 +215,8 @@ function render(state){
     clear.addEventListener("click",()=>{input.value="";clear.hidden=true;input.focus()});
   }
 }
+
+function bindEditorRemovers(){app.querySelectorAll(".row-remove").forEach(btn=>{if(btn.dataset.bound)return;btn.dataset.bound="1";btn.addEventListener("click",()=>btn.closest(".editor-row")?.remove())})}
 
 async function boot(){
   // Render the shell immediately. IndexedDB must never block the first paint.
