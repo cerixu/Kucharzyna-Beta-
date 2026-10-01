@@ -88,6 +88,19 @@ test("Mam Mąkę calculator calculates dough from flour",async({page})=>{
   await expect(page.getByText("5460 g",{exact:true})).toBeVisible();
 });
 
+test("Kuchnia prowadzi przez kroki receptury",async({page})=>{
+  await page.goto("#/recipes");
+  await page.locator(".recipe-card").first().click();
+  await expect(page.getByRole("heading",{name:"Spaghetti alla Carbonara"})).toBeVisible();
+  await page.getByRole("button",{name:"👨‍🍳 Zacznij gotowanie"}).click();
+  await expect(page.getByRole("heading",{name:"Kuchnia"})).toBeVisible();
+  await expect(page.getByText("KROK 1 / 4")).toBeVisible();
+  await expect(page.getByText("Podsmaż guanciale na średnim ogniu.",{exact:true})).toBeVisible();
+  await page.getByRole("button",{name:"Dalej →"}).click();
+  await expect(page.getByText("KROK 2 / 4")).toBeVisible();
+  await expect(page.getByText("Utrzyj Pecorino z żółtkami i pieprzem.",{exact:true})).toBeVisible();
+});
+
 test("Working modules no longer show placeholder",async({page})=>{
   await page.goto("/");
   await page.getByRole("button",{name:"Zakupy"}).last().click();
