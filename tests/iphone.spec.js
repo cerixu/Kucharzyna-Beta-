@@ -210,3 +210,17 @@ test("Food Cost procent i skalowanie działają",async({page})=>{
   await page.goto("#/recipes");await page.getByRole("button",{name:"Dodaj recepturę"}).click();await page.getByLabel("Nazwa").fill("Food Cost Test");await page.getByLabel("Cena sprzedaży / porcję (zł)").fill("40");await page.locator("[name=ingredientName]").first().fill("mąka test");await page.locator("[name=ingredientQty]").first().fill("100");await page.locator("[name=ingredientUnit]").first().fill("g");await page.getByRole("button",{name:"Zapisz recepturę"}).click();
   await expect(page.getByText("2,00 zł",{exact:true})).toBeVisible();await expect(page.getByText("5%",{exact:true})).toBeVisible();await page.getByLabel("Docelowa liczba porcji").fill("2");await page.getByLabel("Docelowa liczba porcji").press("Enter");await expect(page.getByText("4,00 zł",{exact:true})).toBeVisible();
 });
+
+
+test("Tryby PRO i AMATOR zmieniają dostępne funkcje",async({page})=>{
+  await page.goto("#/settings");
+  await expect(page.getByText("Tryb aplikacji")).toBeVisible();
+  await page.getByRole("button",{name:"AMATOR"}).click();
+  await expect(page.getByText("Lodówka")).toBeVisible();
+  await page.goto("#/inventory");
+  await expect(page.getByRole("heading",{name:"Lodówka"})).toBeVisible();
+  await page.goto("#/settings");
+  await page.getByRole("button",{name:"PRO"}).click();
+  await page.goto("#/inventory");
+  await expect(page.getByRole("heading",{name:"Magazyn"})).toBeVisible();
+});
