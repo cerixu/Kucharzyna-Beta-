@@ -3,7 +3,7 @@ const{test,expect}=require("@playwright/test");
 test("Start fits the iPhone viewport",async({page})=>{
   await page.goto("/");
   await expect(page.getByText("Kucharzyna",{exact:true}).first()).toBeVisible();
-  await expect(page.getByText("v0.1.13",{exact:true})).toBeVisible();
+  await expect(page.getByText("v0.1.14",{exact:true})).toBeVisible();
   await expect(page.getByPlaceholder("Szukaj receptury, składnika...")).toBeVisible();
   await expect(page.locator(".home-action")).toHaveCount(7);
   await expect(page.locator(".category-card")).toHaveCount(4);
@@ -75,6 +75,22 @@ test("Recipe scaling recalculates ingredient quantities",async({page})=>{
   await page.getByLabel("Docelowa liczba porcji").fill("20");
   await page.getByLabel("Docelowa liczba porcji").press("Enter");
   await expect(page.getByText("1000 g",{exact:true})).toBeVisible();
+});
+
+test("Mam Mąkę calculator supports production targets",async({page})=>{
+  await page.goto("#/calculators");
+  await page.locator("#dough-balls").fill("30");
+  await page.locator("#dough-ball-weight").fill("250");
+  await expect(page.getByText("7500 g",{exact:true})).toHaveCount(2);
+  await page.locator("#dough-flour").fill("7500");
+  await expect(page.locator("#dough-out-water")).toHaveText("4875 g");
+  await expect(page.locator("#dough-out-total")).toHaveText("12592.5 g");
+  await expect(page.locator("#dough-out-difference")).toHaveText("5092.5 g");
+  await page.locator("#production-balls").fill("30");
+  await page.locator("#production-ball-weight").fill("250");
+  await expect(page.locator("#production-out-total")).toHaveText("7500 g");
+  await expect(page.locator("#production-out-flour")).toHaveText("4466.17 g");
+  await expect(page.locator("#production-out-water")).toHaveText("2903.01 g");
 });
 
 test("Mam Mąkę calculator calculates dough from flour",async({page})=>{
