@@ -81,7 +81,8 @@ test("Mam Mąkę calculator supports production targets",async({page})=>{
   await page.goto("#/calculators");
   await page.locator("#dough-balls").fill("30");
   await page.locator("#dough-ball-weight").fill("250");
-  await expect(page.getByText("7500 g",{exact:true})).toHaveCount(2);
+  await expect(page.locator("#dough-out-target")).toHaveText("7500 g");
+  await expect(page.locator("#production-out-total")).toHaveText("7500 g");
   await page.locator("#dough-flour").fill("7500");
   await expect(page.locator("#dough-out-water")).toHaveText("4875 g");
   await expect(page.locator("#dough-out-total")).toHaveText("12592.5 g");
