@@ -4,7 +4,7 @@ test("Start fits the iPhone viewport",async({page})=>{
   await page.goto("/");
   await expect(page.getByText("Kucharzyna",{exact:true}).first()).toBeVisible();
   await expect(page.getByPlaceholder("Szukaj receptury, składnika...")).toBeVisible();
-  await expect(page.locator(".home-action")).toHaveCount(9);
+  await expect(page.locator(".home-action")).toHaveCount(7);
   await expect(page.locator(".category-card")).toHaveCount(4);
   await expect(page.locator(".app-bottom-nav")).toBeVisible();
   const m=await page.evaluate(()=>({w:innerWidth,h:innerHeight,scrollWidth:document.documentElement.scrollWidth,navBottom:document.querySelector(".app-bottom-nav").getBoundingClientRect().bottom}));
@@ -266,4 +266,30 @@ test("PRO inventory exposes EAN scanner fallback", async ({page})=>{
   await ean.fill("5901234123457");
   await page.getByRole("button",{name:"Użyj kodu"}).click();
   await expect(page.getByText("5901234123457",{exact:true})).toBeVisible();
+});
+
+
+test("Ulubione pokazują tylko zapisane receptury i zachowują stan po przeładowaniu",async({page})=>{
+  await page.goto("#/recipes");
+  await page.locator(".recipe-card").filter({hasText:"Spaghetti alla Carbonara"}).click();
+  await page.getByRole("button",{name:/Dodaj do ulubionych/}).click();
+  await page.goto("#/favorites");
+  await expect(page.getByRole("heading",{name:"Ulubione",exact:true})).toBeVisible();
+  await expect(page.getByText("Spaghetti alla Carbonara",{exact:true})).toBeVisible();
+  await expect(page.getByText("Pizza Napoletana",{exact:true})).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByText("Spaghetti alla Carbonara",{exact:true})).toBeVisible();
+  await expect(page.getByText("Pizza Napoletana",{exact:true})).toHaveCount(0);
+});
+
+test("AMATOR blokuje kalkulator i ukrywa funkcje PRO",async({page})=>{
+  await page.goto("#/settings");
+  await page.getByRole("button",{name:"AMATOR"}).click();
+  await page.goto("/");
+  await expect(page.getByText("Kalkulator",{exact:true})).toHaveCount(0);
+  await page.goto("#/calculators");
+  await expect(page.getByRole("heading",{name:"Co dziś"})).toBeVisible();
+  await page.goto("#/recipes");
+  await page.locator(".recipe-card").first().click();
+  await expect(page.getByText("FOOD COST",{exact:true})).toHaveCount(0);
 });
