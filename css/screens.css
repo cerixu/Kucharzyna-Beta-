@@ -56,3 +56,33 @@
   .category-card{flex-basis:154px;height:170px}
   .category-scroller{margin-right:-14px}
 }
+
+/* Stage 4: Recipes */
+.module-head{display:flex;align-items:end;justify-content:space-between;gap:12px}
+.recipe-add{width:46px;height:46px;min-width:46px;padding:0;font-size:22px}
+.recipes-search{margin-top:20px}
+.recipes-search>.svg-icon{position:absolute;left:15px;width:20px;height:20px;color:var(--color-text-muted);pointer-events:none;z-index:1}
+.recipes-search .input{padding-left:43px}
+.recipe-filters{margin-top:12px}
+.recipe-results{display:grid;gap:10px;margin-top:16px}
+.recipe-card{display:grid;gap:8px;width:100%;padding:16px;border:1px solid var(--color-line);border-radius:20px;background:linear-gradient(145deg,var(--color-surface-1),var(--color-surface-2));text-align:left;box-shadow:var(--shadow-card)}
+.recipe-card:active{transform:scale(.992)}
+.recipe-card-top,.recipe-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.recipe-card-title{font-size:19px;line-height:1.08;font-weight:var(--weight-bold);letter-spacing:-.035em}
+.recipe-card-region,.recipe-card-bottom{color:var(--color-text-muted);font-size:12px}
+.recipe-heart{font-size:20px;color:var(--color-accent)}
+.back-link{min-height:40px;padding:0 4px;color:var(--color-accent);font-size:13px;font-weight:var(--weight-bold)}
+.recipe-detail .screen-title{margin-top:12px}
+.recipe-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.recipe-meta span{padding:7px 10px;border:1px solid var(--color-line);border-radius:999px;background:var(--color-surface-1);color:var(--color-text-soft);font-size:11px;font-weight:var(--weight-semibold)}
+.recipe-detail-actions{margin-top:14px}
+.recipe-block{margin-top:24px}
+.recipe-block .section-heading{margin-top:0}
+.ingredient-list,.steps-list{margin:0;padding:0;list-style:none;border:1px solid var(--color-line);border-radius:18px;overflow:hidden;background:var(--color-surface-1)}
+.ingredient-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border-bottom:1px solid var(--color-line);font-size:13px}
+.ingredient-list li:last-child{border-bottom:0}
+.ingredient-list b{color:var(--color-accent);font-size:12px;white-space:nowrap}
+.steps-list{counter-reset:steps}
+.steps-list li{counter-increment:steps;position:relative;padding:14px 15px 14px 49px;border-bottom:1px solid var(--color-line);color:var(--color-text-soft);font-size:13px;line-height:1.45}
+.steps-list li:last-child{border-bottom:0}
+.steps-list li::before{content:counter(steps);position:absolute;left:15px;top:13px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:rgba(231,169,75,.12);color:var(--color-accent);font-weight:var(--weight-bold)}
