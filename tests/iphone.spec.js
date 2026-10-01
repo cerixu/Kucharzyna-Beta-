@@ -222,7 +222,7 @@ test("Tryby PRO i AMATOR zmieniają dostępne funkcje",async({page})=>{
   await page.goto("#/settings");
   await page.getByRole("button",{name:"PRO"}).click();
   await page.goto("#/inventory");
-  await expect(page.getByRole("heading",{name:"Magazyn"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Magazyn",exact:true})).toBeVisible();
 });
 
 test("User data is isolated between separate browser contexts",async({browser})=>{
