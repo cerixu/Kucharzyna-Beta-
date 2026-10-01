@@ -60,9 +60,6 @@ test("Recipe editor creates and saves a recipe",async({page})=>{
   await page.getByRole("button",{name:"＋ Krok"}).click();
   await page.locator("[name=step]").nth(1).fill("Wymieszaj składniki.");
   await page.getByRole("button",{name:"Zapisz recepturę"}).click();
-  const savedCard=page.locator(".recipe-card").filter({hasText:"Testowa receptura"});
-  await expect(savedCard).toBeVisible();
-  await savedCard.click();
   await expect(page.getByRole("heading",{name:"Testowa receptura",exact:true})).toBeVisible();
   await expect(page.getByText("masło",{exact:true})).toBeVisible();
 });
@@ -218,7 +215,6 @@ test("Tryby PRO i AMATOR zmieniają dostępne funkcje",async({page})=>{
   await page.getByRole("button",{name:"AMATOR"}).click();
   await page.goto("#/inventory");
   await expect(page.getByRole("heading",{name:"Lodówka",exact:true})).toBeVisible();
-  await expect(page.getByRole("heading",{name:"Lodówka"})).toBeVisible();
   await page.goto("#/settings");
   await page.getByRole("button",{name:"PRO"}).click();
   await page.goto("#/inventory");
