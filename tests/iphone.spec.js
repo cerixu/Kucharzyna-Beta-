@@ -95,15 +95,15 @@ test("Kuchnia prowadzi przez kroki receptury",async({page})=>{
   await page.getByRole("button",{name:"👨‍🍳 Zacznij gotowanie"}).click();
   await expect(page.getByRole("heading",{name:"Kuchnia"})).toBeVisible();
   await expect(page.getByText("KROK 1 / 4")).toBeVisible();
-  await expect(page.getByText("Podsmaż guanciale na średnim ogniu.",{exact:true})).toBeVisible();
+  await expect(page.locator(".cook-step-card strong")).toHaveText("Podsmaż guanciale na średnim ogniu.");
   await page.getByRole("button",{name:"Dalej →"}).click();
   await expect(page.getByText("KROK 2 / 4")).toBeVisible();
-  await expect(page.getByText("Utrzyj Pecorino z żółtkami i pieprzem.",{exact:true})).toBeVisible();
+  await expect(page.locator(".cook-step-card strong")).toHaveText("Utrzyj Pecorino z żółtkami i pieprzem.");
 });
 
 test("Magazyn obsługuje minima, alerty i edycję stanu",async({page})=>{
   await page.goto("#/inventory");
-  await expect(page.getByRole("heading",{name:"Magazyn"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Magazyn",exact:true})).toBeVisible();
   const form=page.locator("#inventory-form");
   await form.locator("[name=name]").fill("mąka 00");
   await form.locator("[name=qty]").fill("5000");
