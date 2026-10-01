@@ -1,13 +1,12 @@
 name: Kucharzyna iPhone E2E
 
 on:
-  push:
-    branches: ["**"]
-  pull_request:
   workflow_dispatch:
+  push:
+    branches: ["main"]
 
 concurrency:
-  group: kucharzyna-e2e-${{ github.ref }}
+  group: kucharzyna-e2e-main
   cancel-in-progress: true
 
 jobs:
@@ -16,12 +15,20 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
-      - run: npx playwright install --with-deps webkit
-      - run: npx playwright test --project=iphone
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright WebKit
+        run: npx playwright install webkit
+
+      - name: Run iPhone E2E
+        run: npx playwright test --project=iphone
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
