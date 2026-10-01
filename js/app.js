@@ -1,4 +1,4 @@
-import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings}from"./state.js";import{initRouter,navigate}from"./router.js";
+import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,startCooking,setCookingStep,finishCooking}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
 
@@ -122,7 +122,7 @@ function recipeScreen(state){
       '<span class="section-kicker">'+selected.category+' · '+selected.region+'</span>'+
       '<h1 class="screen-title">'+selected.name+'</h1>'+
       '<div class="recipe-meta"><span>'+selected.time+'</span><span>'+selected.servings+' porcji</span><span>'+selected.ingredients.length+' składników</span></div>'+
-      '<div class="scale-panel"><div><small>SKALOWANIE RECEPTURY</small><strong>Na ile porcji?</strong></div><div class="scale-controls"><button type="button" class="scale-step" data-scale-step="-1" aria-label="Zmniejsz liczbę porcji">−</button><input id="recipe-servings" class="scale-input" type="number" min="1" step="1" value="'+(state.recipeTargetServings||selected.servings)+'" aria-label="Docelowa liczba porcji"><button type="button" class="scale-step" data-scale-step="1" aria-label="Zwiększ liczbę porcji">＋</button></div><span class="scale-note">Bazowa receptura: '+selected.servings+' porcji</span></div><div class="recipe-detail-actions"><button class="button button-secondary" type="button" data-favorite="'+selected.id+'">'+(selected.favorite?'♥ Ulubione':'♡ Dodaj do ulubionych')+'</button><button class="button button-secondary" type="button" data-edit-recipe="'+selected.id+'">✎ Edytuj</button></div>'+
+      '<div class="scale-panel"><div><small>SKALOWANIE RECEPTURY</small><strong>Na ile porcji?</strong></div><div class="scale-controls"><button type="button" class="scale-step" data-scale-step="-1" aria-label="Zmniejsz liczbę porcji">−</button><input id="recipe-servings" class="scale-input" type="number" min="1" step="1" value="'+(state.recipeTargetServings||selected.servings)+'" aria-label="Docelowa liczba porcji"><button type="button" class="scale-step" data-scale-step="1" aria-label="Zwiększ liczbę porcji">＋</button></div><span class="scale-note">Bazowa receptura: '+selected.servings+' porcji</span></div><div class="recipe-detail-actions"><button class="button button-secondary" type="button" data-favorite="'+selected.id+'">'+(selected.favorite?'♥ Ulubione':'♡ Dodaj do ulubionych')+'</button><button class="button button-secondary" type="button" data-edit-recipe="'+selected.id+'">✎ Edytuj</button><button class="button button-primary button-block" type="button" data-start-cooking="'+selected.id+'">👨‍🍳 Zacznij gotowanie</button></div>'+
       '<div class="recipe-block"><div class="section-heading"><span><small>SKŁADNIKI</small><h2>Składniki</h2></span></div>'+
       '<ul class="ingredient-list">'+selected.ingredients.map(i=>'<li><span>'+i.name+'</span><b>'+formatScaledQuantity(i.qty,(state.recipeTargetServings||selected.servings)/Math.max(1,Number(selected.servings)))+' '+i.unit+'</b></li>').join('')+'</ul></div>'+
       '<div class="recipe-block"><div class="section-heading"><span><small>PRACA</small><h2>Przygotowanie</h2></span></div>'+
@@ -147,9 +147,11 @@ function recipeCards(recipes){
 }
 function moduleCard(title,copy,action,label){return '<div class="module-card"><div><small>'+title+'</small><p>'+copy+'</p></div>'+(action?'<button class="button button-secondary" type="button" data-module-action="'+action+'">'+label+'</button>':'')+'</div>'}
 function cookingScreen(state){
-  const selected=state.recipes.find(r=>r.id===state.selectedRecipe)||state.recipes[0];
-  if(!selected)return '<section class="screen module-screen"><span class="section-kicker">KUCHNIA</span><h1 class="screen-title">Kuchnia</h1><p class="screen-lead">Najpierw dodaj recepturę.</p></section>';
-  return '<section class="screen module-screen"><span class="section-kicker">TRYB PRACY</span><h1 class="screen-title">Kuchnia</h1><p class="screen-lead">Pracuj krok po kroku bez szukania po recepturze.</p><div class="cook-hero"><small>AKTUALNA RECEPTURA</small><h2>'+selected.name+'</h2><span>'+selected.servings+' porcji · '+selected.time+'</span></div><ol class="steps-list cooking-steps">'+selected.steps.map(x=>'<li>'+x+'</li>').join('')+'</ol><button class="button button-primary button-block" type="button" data-route="recipes">Wybierz inną recepturę</button></section>';
+  const selected=state.recipes.find(r=>r.id===state.cookingRecipe);
+  if(!selected)return '<section class="screen module-screen"><span class="section-kicker">KUCHNIA</span><h1 class="screen-title">Kuchnia</h1><p class="screen-lead">Wejdź w recepturę i uruchom tryb pracy.</p><button class="button button-primary button-block" type="button" data-route="recipes">Wybierz recepturę</button></section>';
+  const step=Math.min(state.cookingStep,Math.max(0,selected.steps.length-1));
+  const done=step>=selected.steps.length-1;
+  return '<section class="screen module-screen cooking-screen"><div class="module-head"><div><span class="section-kicker">TRYB PRACY</span><h1 class="screen-title">Kuchnia</h1></div><button class="button button-secondary" type="button" data-route="recipes">Wyjdź</button></div><div class="cook-hero"><small>AKTUALNA RECEPTURA</small><h2>'+selected.name+'</h2><span>'+selected.servings+' porcji · '+selected.time+'</span></div><div class="cook-progress"><div><span>KROK '+(step+1)+' / '+selected.steps.length+'</span><b>'+Math.round(((step+1)/selected.steps.length)*100)+'%</b></div><div class="cook-progress-track"><i style="width:'+(((step+1)/selected.steps.length)*100)+'%"></i></div></div><div class="cook-step-card"><small>TERAZ</small><strong>'+selected.steps[step]+'</strong></div><div class="cook-controls"><button class="button button-secondary" type="button" data-cook-step="-1" '+(step===0?'disabled':'')+'>← Wstecz</button><button class="button button-primary" type="button" data-cook-step="1">'+(done?'Zakończ':'Dalej →')+'</button></div><div class="cook-all-steps"><small>WSZYSTKIE KROKI</small><ol class="steps-list cooking-steps">'+selected.steps.map((x,i)=>'<li class="'+(i<step?'done':'')+'">'+x+'</li>').join('')+'</ol></div></section>';
 }
 function shoppingScreen(state){
   const items=state.shopping;
@@ -215,6 +217,8 @@ function render(state){
   }
   app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
   app.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>toggleFavorite(b.dataset.favorite)));
+  app.querySelectorAll("[data-start-cooking]").forEach(b=>b.addEventListener("click",()=>startCooking(b.dataset.startCooking)));
+  app.querySelectorAll("[data-cook-step]").forEach(b=>b.addEventListener("click",()=>{const delta=Number(b.dataset.cookStep);const s=getState();const recipe=s.recipes.find(r=>r.id===s.cookingRecipe);if(!recipe)return;if(delta>0&&s.cookingStep>=recipe.steps.length-1){finishCooking();navigate("recipes")}else setCookingStep(s.cookingStep+delta)}));
   app.querySelectorAll("[data-edit-recipe]").forEach(b=>b.addEventListener("click",()=>{getState().editorMode=true;render(getState())}));
   const back=app.querySelector("[data-recipe-back]"); if(back)back.addEventListener("click",()=>selectRecipe(null));
   const scaleInput=app.querySelector("#recipe-servings");
