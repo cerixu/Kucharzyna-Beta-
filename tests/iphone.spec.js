@@ -205,7 +205,7 @@ test("Food Cost liczy koszt receptury i koszt porcji",async({page})=>{
 test("Food Cost procent i skalowanie działają",async({page})=>{
   await page.goto("#/inventory");const form=page.locator("#inventory-form");await form.locator("[name=name]").fill("mąka test");await form.locator("[name=qty]").fill("1000");await form.locator("[name=unit]").fill("g");await form.locator("[name=purchasePrice]").fill("20");await form.getByRole("button",{name:"＋ Dodaj do magazynu"}).click();
   await page.goto("#/recipes");await page.getByRole("button",{name:"Dodaj recepturę"}).click();await page.getByLabel("Nazwa").fill("Food Cost Test");await page.getByLabel("Cena sprzedaży / porcję (zł)").fill("40");await page.locator("[name=ingredientName]").first().fill("mąka test");await page.locator("[name=ingredientQty]").first().fill("100");await page.locator("[name=ingredientUnit]").first().fill("g");await page.getByRole("button",{name:"Zapisz recepturę"}).click();
-  await expect(page.getByText("2,00 zł",{exact:true})).toBeVisible();await expect(page.getByText("5%",{exact:true})).toBeVisible();await page.getByLabel("Docelowa liczba porcji").fill("2");await page.getByLabel("Docelowa liczba porcji").press("Enter");await expect(page.getByText("4,00 zł",{exact:true})).toBeVisible();
+  await expect(page.getByText("2,00 zł",{exact:true})).toHaveCount(2);await expect(page.getByText("5%",{exact:true})).toBeVisible();await page.getByLabel("Docelowa liczba porcji").fill("2");await page.getByLabel("Docelowa liczba porcji").press("Enter");await expect(page.getByText("4,00 zł",{exact:true})).toBeVisible();
 });
 
 
