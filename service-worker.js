@@ -1,4 +1,4 @@
-const CACHE="kucharzyna-beta-0-1-v3";
+const CACHE="kucharzyna-beta-0-1-v4";
 const CORE=["./","./index.html","./manifest.webmanifest","./css/tokens.css","./css/base.css","./css/layout.css","./css/components.css","./css/screens.css","./js/app.js","./js/router.js","./js/state.js","./js/db.js","./assets/start/pizza.svg","./assets/start/pasta.svg","./assets/start/bakery.svg","./assets/start/veg.svg"];
 const NETWORK_FIRST=["/","/index.html","/js/app.js","/js/router.js","/js/state.js","/js/db.js","/css/tokens.css","/css/base.css","/css/layout.css","/css/components.css","/css/screens.css"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
