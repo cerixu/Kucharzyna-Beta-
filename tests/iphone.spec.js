@@ -259,3 +259,15 @@ test("User data is isolated between separate browser contexts",async({browser})=
   await userA.close();
   await userB.close();
 });
+
+
+test("PRO inventory exposes EAN scanner fallback", async ({page})=>{
+  await page.goto("#/inventory");
+  await expect(page.getByRole("heading",{name:"Magazyn"})).toBeVisible();
+  await page.getByRole("button",{name:/Skanuj produkt/i}).click();
+  await expect(page.getByText("Dodaj produkt po EAN",{exact:true})).toBeVisible();
+  const ean=page.locator("#barcode-ean");
+  await ean.fill("5901234123457");
+  await page.getByRole("button",{name:"Użyj kodu"}).click();
+  await expect(page.getByText("5901234123457",{exact:true})).toBeVisible();
+});
