@@ -9,7 +9,7 @@ const DEFAULT_RECIPES=[
 export function getState(){return state}export function subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn)}
 export function selectRecipe(id){state.selectedRecipe=id;notify()}
 export async function toggleFavorite(id){const recipe=state.recipes.find(x=>x.id===id);if(!recipe)return;recipe.favorite=!recipe.favorite;await put("recipes",recipe);notify()}
-export function setRoute(route){state.route=route;notify()}export function update(partial){Object.assign(state,partial);notify()}
+export function setRoute(route){state.route=route;if(route!=="recipes")state.selectedRecipe=null;notify()}export function update(partial){Object.assign(state,partial);notify()}
 export async function hydrate(){
   const results=await Promise.allSettled([getAll("recipes"),getAll("shopping"),getAll("inventory"),getAll("settings")]);
   state.recipes=results[0].status==="fulfilled"?results[0].value:[];
