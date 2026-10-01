@@ -35,6 +35,25 @@ export function getRecipeFoodCost(recipeId,targetServings){
   const sellPrice=Number(recipe?.sellPrice)||0;
   return {...cost,servings,costPerServing,sellPrice,percent:sellPrice>0?(costPerServing/sellPrice)*100:null};
 }
+export function getRecipeCost(recipeId,targetServings){
+  const recipe=state.recipes.find(x=>x.id===recipeId); if(!recipe)return {items:[],cost:0,priced:[],unpriced:[]};
+  const factor=Math.max(1,Number(targetServings)||Number(recipe.servings)||1)/(Number(recipe.servings)||1);
+  const normalize=value=>String(value||"").trim().toLocaleLowerCase("pl-PL").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const items=(recipe.ingredients||[]).map(i=>{
+    const required=Number(i.qty)*factor;
+    const stock=state.inventory.find(x=>normalize(x.name)===normalize(i.name)&&normalize(x.unit)===normalize(i.unit));
+    const unitPrice=stock&&Number(stock.qty)>0?Number(stock.purchasePrice||0)/Number(stock.qty):0;
+    const cost=Number.isFinite(required)&&unitPrice>0?required*unitPrice:0;
+    return {name:i.name,unit:i.unit,required:Number.isFinite(required)?required:0,inventoryId:stock?.id||null,unitPrice,cost,priced:Boolean(stock&&Number(stock.qty)>0&&Number(stock.purchasePrice)>0)};
+  });
+  const priced=items.filter(x=>x.priced),unpriced=items.filter(x=>!x.priced);
+  return {items,cost:priced.reduce((sum,x)=>sum+x.cost,0),priced,unpriced};
+}
+export function getRecipeFoodCost(recipeId,targetServings){
+  const recipe=state.recipes.find(x=>x.id===recipeId); const cost=getRecipeCost(recipeId,targetServings);
+  const servings=Math.max(1,Number(targetServings)||Number(recipe?.servings)||1); const costPerServing=cost.cost/servings; const sellPrice=Number(recipe?.sellPrice)||0;
+  return {...cost,servings,costPerServing,sellPrice,percent:sellPrice>0?(costPerServing/sellPrice)*100:null};
+}
 export function getRecipeStockStatus(recipeId,targetServings){
   const recipe=state.recipes.find(x=>x.id===recipeId);
   if(!recipe)return {items:[],matched:[],missing:[]};
