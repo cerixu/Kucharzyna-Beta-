@@ -273,7 +273,7 @@ function render(state){
       const steps=[...form.querySelectorAll("[name=step]")].map(x=>x.value.trim()).filter(Boolean);
       const recipe={id:getState().selectedRecipe||null,name:String(fd.get("name")||"").trim(),category:String(fd.get("category")||"Inne"),region:String(fd.get("region")||"").trim(),time:String(fd.get("time")||"").trim(),servings:Number(fd.get("servings")||1),favorite:false,sellPrice:Number(fd.get("sellPrice")||0),ingredients,steps,notes:String(fd.get("notes")||"").trim()};
       const old=getState().recipes.find(x=>x.id===recipe.id); if(old)recipe.favorite=old.favorite;
-      await saveRecipe(recipe);getState().editorMode=false;selectRecipe(recipe.id);
+      const saved=saveRecipe(recipe);getState().editorMode=false;selectRecipe(recipe.id);await saved;
     });
   }
   app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
