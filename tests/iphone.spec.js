@@ -196,3 +196,17 @@ test("Working modules no longer show placeholder",async({page})=>{
   await expect(page.getByRole("heading",{name:"Więcej"})).toBeVisible();
   await expect(page.getByText("Kolejne funkcje dokładamy", {exact:false})).toHaveCount(0);
 });
+
+
+test("Food Cost liczy koszt receptury i koszt porcji",async({page})=>{
+  await page.goto("#/inventory");const form=page.locator("#inventory-form");
+  const items=[["świeży makaron","300","g","6"],["guanciale","100","g","8"],["żółtko","4","szt.","4"],["Pecorino Romano","70","g","14"],["pieprz czarny","4","g","2"]];
+  for(const [name,qty,unit,price] of items){await form.locator("[name=name]").fill(name);await form.locator("[name=qty]").fill(qty);await form.locator("[name=unit]").fill(unit);await form.locator("[name=minQty]").fill("0");await form.locator("[name=purchasePrice]").fill(price);await form.getByRole("button",{name:"＋ Dodaj do magazynu"}).click();}
+  await page.goto("#/recipes");await page.locator(".recipe-card").filter({hasText:"Spaghetti alla Carbonara"}).click();
+  await expect(page.getByText("Koszt receptury")).toBeVisible();await expect(page.getByText("17,00 zł",{exact:true})).toHaveCount(2);
+});
+test("Food Cost procent i skalowanie działają",async({page})=>{
+  await page.goto("#/inventory");const form=page.locator("#inventory-form");await form.locator("[name=name]").fill("mąka test");await form.locator("[name=qty]").fill("1000");await form.locator("[name=unit]").fill("g");await form.locator("[name=purchasePrice]").fill("20");await form.getByRole("button",{name:"＋ Dodaj do magazynu"}).click();
+  await page.goto("#/recipes");await page.getByRole("button",{name:"Dodaj recepturę"}).click();await page.getByLabel("Nazwa").fill("Food Cost Test");await page.getByLabel("Cena sprzedaży / porcję (zł)").fill("40");await page.locator("[name=ingredientName]").first().fill("mąka test");await page.locator("[name=ingredientQty]").first().fill("100");await page.locator("[name=ingredientUnit]").first().fill("g");await page.getByRole("button",{name:"Zapisz recepturę"}).click();
+  await expect(page.getByText("2,00 zł",{exact:true})).toBeVisible();await expect(page.getByText("5%",{exact:true})).toBeVisible();await page.getByLabel("Docelowa liczba porcji").fill("2");await page.getByLabel("Docelowa liczba porcji").press("Enter");await expect(page.getByText("4,00 zł",{exact:true})).toBeVisible();
+});
