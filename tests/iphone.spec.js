@@ -126,7 +126,7 @@ test("Kuchnia rozlicza zużyte składniki z magazynu",async({page})=>{
   await page.getByRole("button",{name:"👨‍🍳 Zacznij gotowanie"}).click();
   page.once("dialog",dialog=>dialog.accept());
   for(let i=0;i<4;i++)await page.getByRole("button",{name:i===3?"Zakończ i rozlicz":"Dalej →"}).click();
-  await expect(page.getByRole("heading",{name:"Receptury"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Spaghetti alla Carbonara",exact:true})).toBeVisible();
   await page.goto("#/inventory");
   const guanciale=page.locator(".inventory-row").filter({hasText:"guanciale"});
   await expect(guanciale.locator("[data-inventory-qty]")).toHaveValue("50");
