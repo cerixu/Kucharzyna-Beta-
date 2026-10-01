@@ -263,7 +263,7 @@ test("User data is isolated between separate browser contexts",async({browser})=
 
 test("PRO inventory exposes EAN scanner fallback", async ({page})=>{
   await page.goto("#/inventory");
-  await expect(page.getByRole("heading",{name:"Magazyn"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Magazyn",exact:true})).toBeVisible();
   await page.getByRole("button",{name:/Skanuj produkt/i}).click();
   await expect(page.getByText("Dodaj produkt po EAN",{exact:true})).toBeVisible();
   const ean=page.locator("#barcode-ean");
