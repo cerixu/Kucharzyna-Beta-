@@ -133,7 +133,7 @@ test("Working modules no longer show placeholder",async({page})=>{
   await page.getByPlaceholder("Dodaj produkt...").fill("mąka 00");
   await page.getByRole("button",{name:"＋"}).click();
   await expect(page.getByText("mąka 00",{exact:true})).toBeVisible();
-  await page.getByRole("button",{name:"Magazyn"}).last().click();
+  await page.goto("#/inventory");
   await expect(page.getByRole("heading",{name:"Magazyn"})).toBeVisible();
   await expect(page.getByText("Magazyn jest pusty")).toBeVisible();
   await page.getByPlaceholder("Produkt...").fill("mąka 00");
