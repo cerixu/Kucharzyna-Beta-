@@ -1,6 +1,7 @@
 import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,setMode,isProMode,startCooking,setCookingStep,finishCooking,getRecipeStockStatus,consumeRecipeIngredients,addMissingToShopping,getRecipeFoodCost}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
+const APP_VERSION="v0.1.12";
 
 const NAV=[
   ["start","home","Start"],
@@ -198,7 +199,7 @@ function render(state){
       '<span class="nav-icon">'+icon(iconName)+'</span><span class="nav-label">'+label+"</span>"+
     "</button>").join("");
   app.innerHTML=
-    '<header class="app-topbar"><button class="brand-button" type="button" data-route="start" aria-label="Start"><span class="brand-mark">'+icon("chef")+'</span><span class="brand-title">Kucharzyna</span></button><span class="topbar-spacer"></span></header>'+
+    '<header class="app-topbar"><button class="brand-button" type="button" data-route="start" aria-label="Start"><span class="brand-mark">'+icon("chef")+'</span><span class="brand-title">Kucharzyna</span></button><span class="topbar-spacer"></span><span class="app-version" aria-label="Wersja aplikacji">v0.1.12</span></header>'+
     '<main class="app-scroll" id="main-scroll">'+screenContent(route,state)+'</main>'+
     '<nav class="app-bottom-nav" aria-label="Główna nawigacja">'+nav+"</nav>";
   app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)));
