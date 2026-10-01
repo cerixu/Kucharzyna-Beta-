@@ -3,7 +3,7 @@ const{test,expect}=require("@playwright/test");
 test("Start fits the iPhone viewport",async({page})=>{
   await page.goto("/");
   await expect(page.getByText("Kucharzyna",{exact:true}).first()).toBeVisible();
-  await expect(page.getByText("v0.1.14",{exact:true})).toBeVisible();
+  await expect(page.getByText("v0.1.15",{exact:true})).toBeVisible();
   await expect(page.getByPlaceholder("Szukaj receptury, składnika...")).toBeVisible();
   await expect(page.locator(".home-action")).toHaveCount(7);
   await expect(page.locator(".category-card")).toHaveCount(4);
@@ -279,6 +279,8 @@ test("PRO inventory exposes EAN scanner fallback", async ({page})=>{
   await expect(page.getByRole("heading",{name:"Magazyn",exact:true})).toBeVisible();
   await page.getByRole("button",{name:/Skanuj produkt/i}).click();
   await expect(page.getByText("Dodaj produkt po EAN",{exact:true})).toBeVisible();
+  await expect(page.locator(".scanner-frame")).toHaveCount(0);
+  await expect(page.locator(".scanner-preview")).toBeVisible();
   const ean=page.locator("#barcode-ean");
   await ean.fill("5901234123457");
   await page.getByRole("button",{name:"Użyj kodu"}).click();

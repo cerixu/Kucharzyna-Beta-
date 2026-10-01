@@ -1,4 +1,4 @@
-const CACHE="kucharzyna-beta-0-1-v14";
+const CACHE="kucharzyna-beta-0-1-v15";
 const ZXING="https://unpkg.com/@zxing/browser@0.2.1/umd/zxing-browser.min.js";
 const CORE=["./","./index.html","./manifest.webmanifest","./css/tokens.css","./css/base.css","./css/layout.css","./css/components.css","./css/screens.css","./js/app.js","./js/boot.js","./js/router.js","./js/state.js","./js/db.js","./assets/start/pizza.svg","./assets/start/pasta.svg","./assets/start/bakery.svg","./assets/start/veg.svg"];
 const NETWORK_FIRST=["/","/index.html","/js/app.js","/js/router.js","/js/state.js","/js/db.js","/css/tokens.css","/css/base.css","/css/layout.css","/css/components.css","/css/screens.css"];
