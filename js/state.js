@@ -15,7 +15,7 @@ export function getRecipeStockStatus(recipeId,targetServings){
   const recipe=state.recipes.find(x=>x.id===recipeId);
   if(!recipe)return {items:[],matched:[],missing:[]};
   const factor=Math.max(1,Number(targetServings)||Number(recipe.servings)||1)/(Number(recipe.servings)||1);
-  const normalize=value=>String(value||"").trim().toLocaleLowerCase("pl-PL").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"");
+  const normalize=value=>String(value||"").trim().toLocaleLowerCase("pl-PL").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const items=(recipe.ingredients||[]).map(i=>{
     const required=Number(i.qty)*factor;
     const stock=state.inventory.find(x=>normalize(x.name)===normalize(i.name)&&normalize(x.unit)===normalize(i.unit));
