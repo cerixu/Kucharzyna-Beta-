@@ -35,10 +35,8 @@ const QUICK=[
   ["cooking","flame","Gotowanie","Tryb pracy krok po kroku"],
   ["shopping","cart","Zakupy","Dodaj i połącz produkty"],
   ["inventory","box","Magazyn","Stany i końcówki"],
-  ["cooking","prep","Prep / produkcja","Plan na kuchnię"],
-  ["recipes","menu","Menu","Pozycje i kategorie"],
   ["calculators","calc","Kalkulator","Pizza, koszt, proporcje"],
-  ["recipes","heart","Ulubione","Twoje zapisane receptury"],
+  ["favorites","heart","Ulubione","Twoje zapisane receptury"],
   ["settings","more","Więcej","Ustawienia i dane"]
 ];
 
@@ -118,8 +116,8 @@ function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,x=>({"&":
 function formatScaledQuantity(qty,factor){const n=Number(qty);if(!Number.isFinite(n))return qty;const value=n*factor;return Number.isInteger(value)?String(value):String(Number(value.toFixed(2)));}
 function formatMoney(value){return new Intl.NumberFormat("pl-PL",{style:"currency",currency:"PLN",minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value)||0)}
 function formatPercent(value){return (Math.round(Number(value)*10)/10).toLocaleString("pl-PL")+"%"}
-function recipeScreen(state){
-  const recipes=state.recipes;
+function recipeScreen(state,favoritesOnly=false){
+  const recipes=favoritesOnly?state.recipes.filter(r=>r.favorite):state.recipes;
   const selected=recipes.find(r=>r.id===state.selectedRecipe);
   if(selected){
     const food=getRecipeFoodCost(selected.id,state.recipeTargetServings||selected.servings);
@@ -138,7 +136,7 @@ function recipeScreen(state){
   }
   const categories=["Wszystkie",...new Set(recipes.map(r=>r.category))];
   return '<section class="screen module-screen recipes-screen">'+
-    '<div class="module-head"><div><span class="section-kicker">KUCHARZYNA</span><h1 class="screen-title">Receptury</h1><p class="screen-lead">Twoja baza receptur, gotowa do pracy.</p></div><button class="button button-primary recipe-add" type="button" aria-label="Dodaj recepturę">＋</button></div>'+
+    '<div class="module-head"><div><span class="section-kicker">KUCHARZYNA</span><h1 class="screen-title">'+(favoritesOnly?'Ulubione':'Receptury')+'</h1><p class="screen-lead">'+(favoritesOnly?'Twoje zapisane receptury, gotowe do pracy.':'Twoja baza receptur, gotowa do pracy.')+'</p></div><button class="button button-primary recipe-add" type="button" aria-label="Dodaj recepturę">＋</button></div>'+
     '<label class="search-field recipes-search">'+icon("search")+'<input id="recipe-search" class="input" type="search" placeholder="Szukaj receptury lub składnika..." autocomplete="off"><button id="recipe-search-clear" class="search-clear" type="button" aria-label="Wyczyść" hidden>×</button></label>'+
     '<div class="chip-row recipe-filters">'+categories.map((x,i)=>'<button class="chip '+(i===0?'active':'')+'" type="button" data-category="'+x+'">'+x+'</button>').join('')+'</div>'+
     '<div class="recipe-results" id="recipe-results">'+recipeCards(recipes)+'</div>'+
@@ -184,6 +182,7 @@ function settingsScreen(state){return '<section class="screen module-screen"><sp
 function screenContent(route,state){
   if(route==="start")return startScreen(state);
   if(route==="recipes")return state.editorMode?recipeEditor(state):recipeScreen(state);
+  if(route==="favorites")return recipeScreen(state,true);
   if(route==="cooking")return cookingScreen(state);
   if(route==="shopping")return shoppingScreen(state);
   if(route==="inventory")return state.settings.mode==="amator"?refrigeratorScreen(state):inventoryScreen(state);
@@ -277,7 +276,7 @@ function render(state){
     });
   }
   app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
-  app.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>toggleFavorite(b.dataset.favorite)));
+  app.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",async()=>{try{await toggleFavorite(b.dataset.favorite)}catch(error){console.error("Kucharzyna: nie udało się zapisać ulubionej receptury.",error)}}));
   app.querySelectorAll("[data-start-cooking]").forEach(b=>b.addEventListener("click",()=>startCooking(b.dataset.startCooking)));
   app.querySelectorAll("[data-cook-step]").forEach(b=>b.addEventListener("click",()=>{const delta=Number(b.dataset.cookStep);const s=getState();const recipe=s.recipes.find(r=>r.id===s.cookingRecipe);if(!recipe)return;if(delta>0&&s.cookingStep>=recipe.steps.length-1){const status=getRecipeStockStatus(recipe.id,s.recipeTargetServings||recipe.servings);const message=status.missing.length?"Nie wszystkie składniki są dostępne w magazynie. Odjąć tylko te, które wystarczą?":"Rozliczyć składniki i odjąć je z magazynu?";if(confirm(message)){consumeRecipeIngredients(recipe.id,s.recipeTargetServings||recipe.servings)}finishCooking();navigate("recipes")}else setCookingStep(s.cookingStep+delta)}));
   app.querySelectorAll("[data-edit-recipe]").forEach(b=>b.addEventListener("click",()=>{getState().editorMode=true;render(getState())}));
