@@ -131,7 +131,7 @@ test("Working modules no longer show placeholder",async({page})=>{
   await expect(page.getByRole("heading",{name:"Zakupy"})).toBeVisible();
   await expect(page.getByText("Lista jest pusta")).toBeVisible();
   await page.getByPlaceholder("Dodaj produkt...").fill("mąka 00");
-  await page.getByRole("button",{name:"＋"}).click();
+  await page.locator("#shopping-form").getByRole("button",{name:"＋"}).click();
   await expect(page.getByText("mąka 00",{exact:true})).toBeVisible();
   await page.goto("#/inventory");
   await expect(page.getByRole("heading",{name:"Magazyn",exact:true})).toBeVisible();
@@ -139,7 +139,7 @@ test("Working modules no longer show placeholder",async({page})=>{
   await page.getByPlaceholder("Produkt...").fill("mąka 00");
   await page.locator("#inventory-form input[name=qty]").fill("5000");
   await page.locator("#inventory-form input[name=unit]").fill("g");
-  await page.getByRole("button",{name:"＋"}).click();
+  await page.locator("#inventory-form").getByRole("button",{name:/Dodaj do magazynu/}).click();
   await expect(page.getByText("mąka 00",{exact:true})).toBeVisible();
   await page.getByRole("button",{name:"Więcej"}).last().click();
   await expect(page.getByRole("heading",{name:"Więcej"})).toBeVisible();
