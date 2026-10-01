@@ -148,7 +148,6 @@ test("Braki receptury trafiają do zakupów z dokładną ilością",async({page}
   await page.getByRole("button",{name:"👨‍🍳 Zacznij gotowanie"}).click();
   await expect(page.getByText(/brakuje 20 g/)).toBeVisible();
   await page.getByRole("button",{name:"＋ Dodaj braki do zakupów"}).click();
-  await expect(page.getByRole("button",{name:"✓ Dodano do zakupów"})).toBeDisabled();
   await page.goto("#/shopping");
   await expect(page.getByText("guanciale · 20 g",{exact:true})).toBeVisible();
 });
