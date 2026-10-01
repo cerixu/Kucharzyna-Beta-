@@ -56,23 +56,7 @@ export async function addMissingToShopping(recipeId,targetServings){
   }
   return added;
 }
-export async function consumeRecipeIngredients(recipeId,targetServings){
-  const status=getRecipeStockStatus(recipeId,targetServings);
-  const consumed=[];
-  const missing=[];
-  for(const item of status.items){
-    if(!item.inventoryId){missing.push({...item,reason:"brak w magazynie"});continue}
-    if(item.available<item.required){missing.push({...item,reason:"za mało w magazynie"});continue}
-    const stock=state.inventory.find(x=>x.id===item.inventoryId);
-    if(!stock)continue;
-    const next=Math.max(0,Number(stock.qty||0)-item.required);
-    await put("inventory",{...stock,qty:next});
-    stock.qty=next;
-    consumed.push({...item,remaining:next});
-  }
-  notify();
-  return {consumed,missing};
-}
+export async function consumeRecipeIngredients(recipeId,targetServings){const recipe=state.recipes.find(x=>x.id===recipeId);if(!recipe)return {consumed:[],missing:[]};const factor=Math.max(1,Number(targetServings)||Number(recipe.servings)||1)/(Number(recipe.servings)||1);const normalize=value=>String(value||"").trim().toLocaleLowerCase("pl-PL").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"");const grouped=new Map();for(const ingredient of recipe.ingredients||[]){const required=Number(ingredient.qty)*factor;if(!Number.isFinite(required))continue;const key=normalize(ingredient.name)+"|"+normalize(ingredient.unit);const current=grouped.get(key)||{name:ingredient.name,unit:ingredient.unit,required:0};current.required+=required;grouped.set(key,current)}const consumed=[];const missing=[];for(const item of grouped.values()){const stock=state.inventory.find(x=>normalize(x.name)===normalize(item.name)&&normalize(x.unit)===normalize(item.unit));const available=stock?Number(stock.qty)||0:0;if(!stock){missing.push({...item,available,inventoryId:null,reason:"brak w magazynie"});continue}if(available<item.required){missing.push({...item,available,inventoryId:stock.id,reason:"za mało w magazynie"});continue}const next=Math.max(0,available-item.required);await put("inventory",{...stock,qty:next});stock.qty=next;consumed.push({...item,available,inventoryId:stock.id,remaining:next})}notify();return {consumed,missing}}
 export function finishCooking(){state.cookingRecipe=null;state.cookingStep=0;notify()}
 export async function saveRecipe(recipe){const value={...recipe,id:recipe.id||("recipe-"+Date.now()),favorite:Boolean(recipe.favorite),servings:Math.max(1,Number(recipe.servings)||1),sellPrice:Math.max(0,Number(recipe.sellPrice)||0),ingredients:(recipe.ingredients||[]).map(i=>{const n=Number(i.qty);return{...i,qty:Number.isFinite(n)?n:i.qty}})};const index=state.recipes.findIndex(x=>x.id===value.id);const previous=index>=0?{...state.recipes[index]}:null;const previousSelected=state.selectedRecipe;const previousEditor=state.editorMode;const previousRoute=state.route;if(index>=0)state.recipes[index]=value;else state.recipes.push(value);state.selectedRecipe=value.id;state.editorMode=false;state.route="recipes";notify();try{await put("recipes",value);return value}catch(error){if(index>=0)state.recipes[index]=previous;else state.recipes=state.recipes.filter(x=>x.id!==value.id);state.selectedRecipe=previousSelected;state.editorMode=previousEditor;state.route=previousRoute;notify();throw error}}
 export async function saveShopping(item){const value={...item,id:item.id||("shopping-"+Date.now()+"-"+Math.random().toString(36).slice(2,7))};const index=state.shopping.findIndex(x=>x.id===value.id);const previous=index>=0?{...state.shopping[index]}:null;if(index>=0)state.shopping[index]=value;else state.shopping.push(value);notify();try{await put("shopping",value);return value}catch(error){if(index>=0)state.shopping[index]=previous;else state.shopping=state.shopping.filter(x=>x.id!==value.id);notify();throw error}}
