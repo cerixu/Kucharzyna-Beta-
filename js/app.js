@@ -1,4 +1,4 @@
-import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,startCooking,setCookingStep,finishCooking,getRecipeStockStatus,consumeRecipeIngredients,addMissingToShopping,getRecipeFoodCost}from"./state.js";import{initRouter,navigate}from"./router.js";
+import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,setMode,isProMode,startCooking,setCookingStep,finishCooking,getRecipeStockStatus,consumeRecipeIngredients,addMissingToShopping,getRecipeFoodCost}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
 
@@ -165,6 +165,10 @@ function cookingScreen(state){
 function shoppingScreen(state){
   const items=state.shopping;
   return '<section class="screen module-screen"><div class="module-head"><div><span class="section-kicker">LISTA</span><h1 class="screen-title">Zakupy</h1><p class="screen-lead">Produkty, które trzeba kupić.</p></div></div><form class="quick-add-form" id="shopping-form"><input class="input" name="item" placeholder="Dodaj produkt..." autocomplete="off"><button class="button button-primary" type="submit">＋</button></form><div class="module-list">'+(items.length?items.map(x=>'<label class="list-row"><input type="checkbox" data-shopping-toggle="'+x.id+'" '+(x.purchased?'checked':'')+'><span>'+x.name+'</span><button type="button" class="row-remove" data-shopping-remove="'+x.id+'">×</button></label>').join(''):'<div class="empty-state"><h2>Lista jest pusta</h2><p>Dodaj pierwszy produkt.</p></div>')+'</div></section>';
+}
+function refrigeratorScreen(state){
+  return '<section class="screen module-screen"><div class="screen-head"><div><small>AMATOR</small><h1 class="screen-title">Lodówka</h1><p class="screen-subtitle">Prosty podgląd tego, co masz pod ręką.</p></div></div>'+
+  '<div class="inventory-list">'+(state.inventory.length?state.inventory.map(x=>'<article class="inventory-row"><div class="inventory-row-head"><div><b>'+escapeHtml(x.name)+'</b><small>'+x.qty+' '+escapeHtml(x.unit)+'</small></div></div></article>').join(""):'<div class="empty-state"><h2>Lodówka jest pusta</h2><p>Dodaj produkty w trybie PRO.</p></div>')+'</div></section>';
 }
 function inventoryScreen(state){
   const lowCount=state.inventory.filter(x=>state.settings.lowStockAlerts&&Number(x.minQty)>0&&Number(x.qty)<=Number(x.minQty)).length;
