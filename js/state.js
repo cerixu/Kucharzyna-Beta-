@@ -23,6 +23,20 @@ export function getRecipeStockStatus(recipeId,targetServings){
   });
   return {items,matched:items.filter(x=>x.inventoryId&&x.available>=x.required),missing:items.filter(x=>!x.inventoryId||x.available<x.required)};
 }
+export async function addMissingToShopping(recipeId,targetServings){
+  const status=getRecipeStockStatus(recipeId,targetServings);
+  const added=[];
+  for(const item of status.missing){
+    const missingQty=Math.max(0,item.required-item.available);
+    if(!missingQty)continue;
+    const name=item.unit?item.name+" · "+missingQty+" "+item.unit:item.name;
+    const existing=state.shopping.find(x=>String(x.name||"").toLocaleLowerCase("pl-PL")===name.toLocaleLowerCase("pl-PL")&&!x.purchased);
+    if(existing)continue;
+    const value=await saveShopping({name,purchased:false,sourceRecipeId:recipeId});
+    added.push(value);
+  }
+  return added;
+}
 export async function consumeRecipeIngredients(recipeId,targetServings){
   const status=getRecipeStockStatus(recipeId,targetServings);
   const consumed=[];
