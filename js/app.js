@@ -1,4 +1,4 @@
-import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,startCooking,setCookingStep,finishCooking,setRoute}from"./state.js";import{initRouter,navigate}from"./router.js";
+import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,startCooking,setCookingStep,finishCooking}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
 
@@ -221,7 +221,7 @@ function render(state){
       const steps=[...form.querySelectorAll("[name=step]")].map(x=>x.value.trim()).filter(Boolean);
       const recipe={id:getState().selectedRecipe||null,name:String(fd.get("name")||"").trim(),category:String(fd.get("category")||"Inne"),region:String(fd.get("region")||"").trim(),time:String(fd.get("time")||"").trim(),servings:Number(fd.get("servings")||1),favorite:false,ingredients,steps,notes:String(fd.get("notes")||"").trim()};
       const old=getState().recipes.find(x=>x.id===recipe.id); if(old)recipe.favorite=old.favorite;
-      await saveRecipe(recipe);setRoute("recipes");selectRecipe(recipe.id);
+      await saveRecipe(recipe);getState().editorMode=false;render(getState());selectRecipe(recipe.id);
     });
   }
   app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
