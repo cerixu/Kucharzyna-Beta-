@@ -203,7 +203,7 @@ function render(state){
   const stockToggle=app.querySelector("#stock-alert-toggle");
   if(stockToggle)stockToggle.addEventListener("click",()=>saveSettings({lowStockAlerts:!getState().settings.lowStockAlerts}));
   const addButton=app.querySelector(".recipe-add");
-  if(addButton)addButton.addEventListener("click",()=>{getState().editorMode=true;render(getState())});
+  if(addButton)addButton.addEventListener("click",()=>{getState().editorMode=true;selectRecipe(null)});
   const editorBack=app.querySelector("[data-editor-back]");
   if(editorBack)editorBack.addEventListener("click",()=>{getState().editorMode=false;selectRecipe(null)});
   const ingredientEditor=app.querySelector("#ingredient-editor");
