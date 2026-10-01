@@ -1,4 +1,4 @@
-import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,startCooking,setCookingStep,finishCooking,getRecipeStockStatus,consumeRecipeIngredients}from"./state.js";import{initRouter,navigate}from"./router.js";
+import{hydrate,subscribe,getState,selectRecipe,toggleFavorite,saveRecipe,setRecipeTargetServings,saveShopping,removeShopping,saveInventory,removeInventory,saveSettings,startCooking,setCookingStep,finishCooking,getRecipeStockStatus,consumeRecipeIngredients,addMissingToShopping}from"./state.js";import{initRouter,navigate}from"./router.js";
 
 const app=document.querySelector("#app");
 
@@ -153,7 +153,7 @@ function cookingScreen(state){
   const done=step>=selected.steps.length-1;
   const stock=getRecipeStockStatus(selected.id,state.recipeTargetServings||selected.servings);
   const stockText=stock.missing.length
-    ? '<div class="cook-stock cook-stock-warning"><b>Magazyn: '+stock.missing.length+' składników do uzupełnienia</b><small>'+stock.missing.map(x=>escapeHtml(x.name)).join(' · ')+'</small></div>'
+    ? '<div class="cook-stock cook-stock-warning"><b>Magazyn: '+stock.missing.length+' składników do uzupełnienia</b><small>'+stock.missing.map(x=>escapeHtml(x.name)+(x.available>0?" · brakuje "+(x.required-x.available)+" "+escapeHtml(x.unit):" · brak w magazynie")).join(" · ")+'</small><button class="button button-secondary" type="button" data-add-missing>＋ Dodaj braki do zakupów</button></div>'
     : '<div class="cook-stock cook-stock-ok"><b>Magazyn: komplet składników</b><small>Po zakończeniu ilości zostaną odjęte ze stanów.</small></div>';
   return '<section class="screen module-screen cooking-screen"><div class="module-head"><div><span class="section-kicker">TRYB PRACY</span><h1 class="screen-title">Kuchnia</h1></div><button class="button button-secondary" type="button" data-route="recipes">Wyjdź</button></div><div class="cook-hero"><small>AKTUALNA RECEPTURA</small><h2>'+selected.name+'</h2><span>'+(state.recipeTargetServings||selected.servings)+' porcji · '+selected.time+'</span></div>'+stockText+'<div class="cook-progress"><div><span>KROK '+(step+1)+' / '+selected.steps.length+'</span><b>'+Math.round(((step+1)/selected.steps.length)*100)+'%</b></div><div class="cook-progress-track"><i style="width:'+(((step+1)/selected.steps.length)*100)+'%"></i></div></div><div class="cook-step-card"><small>TERAZ</small><strong>'+selected.steps[step]+'</strong></div><div class="cook-controls"><button class="button button-secondary" type="button" data-cook-step="-1" '+(step===0?'disabled':'')+'>← Wstecz</button><button class="button button-primary" type="button" data-cook-step="1">'+(done?'Zakończ i rozlicz':'Dalej →')+'</button></div><div class="cook-all-steps"><small>WSZYSTKIE KROKI</small><ol class="steps-list cooking-steps">'+selected.steps.map((x,i)=>'<li class="'+(i<step?'done':'')+'">'+x+'</li>').join('')+'</ol></div></section>';
 }
@@ -194,6 +194,7 @@ function render(state){
   app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)));
   const shoppingForm=app.querySelector("#shopping-form");
   if(shoppingForm)shoppingForm.addEventListener("submit",async e=>{e.preventDefault();const input=shoppingForm.elements.namedItem("item");const name=input?.value.trim()||"";if(name){await saveShopping({name,purchased:false});input.value="";}});
+  const addMissing=app.querySelector("[data-add-missing]"); if(addMissing)addMissing.addEventListener("click",async()=>{const s=getState();const recipe=s.recipes.find(r=>r.id===s.cookingRecipe);if(!recipe)return;const added=await addMissingToShopping(recipe.id,s.recipeTargetServings||recipe.servings);addMissing.textContent=added.length?"✓ Dodano do zakupów":"✓ Braki już są na liście";addMissing.disabled=true;});
   app.querySelectorAll("[data-shopping-toggle]").forEach(x=>x.addEventListener("change",()=>{const item=getState().shopping.find(i=>i.id===x.dataset.shoppingToggle);if(item)saveShopping({...item,purchased:x.checked})}));
   app.querySelectorAll("[data-shopping-remove]").forEach(x=>x.addEventListener("click",()=>removeShopping(x.dataset.shoppingRemove)));
   const inventoryForm=app.querySelector("#inventory-form");
