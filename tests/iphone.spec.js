@@ -216,8 +216,8 @@ test("Tryby PRO i AMATOR zmieniają dostępne funkcje",async({page})=>{
   await page.goto("#/settings");
   await expect(page.getByText("Tryb aplikacji")).toBeVisible();
   await page.getByRole("button",{name:"AMATOR"}).click();
-  await expect(page.getByText("Lodówka")).toBeVisible();
   await page.goto("#/inventory");
+  await expect(page.getByText("Lodówka")).toBeVisible();
   await expect(page.getByRole("heading",{name:"Lodówka"})).toBeVisible();
   await page.goto("#/settings");
   await page.getByRole("button",{name:"PRO"}).click();
