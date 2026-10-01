@@ -2,7 +2,8 @@ const{test,expect}=require("@playwright/test");
 
 test("Start fits the iPhone viewport",async({page})=>{
   await page.goto("/");
-  await expect(page.getByText("Kucharzyna",{exact:true}).first()).toBeVisible();\n  await expect(page.getByText("v0.1.13",{exact:true})).toBeVisible();
+  await expect(page.getByText("Kucharzyna",{exact:true}).first()).toBeVisible();
+  await expect(page.getByText("v0.1.13",{exact:true})).toBeVisible();
   await expect(page.getByPlaceholder("Szukaj receptury, składnika...")).toBeVisible();
   await expect(page.locator(".home-action")).toHaveCount(7);
   await expect(page.locator(".category-card")).toHaveCount(4);
