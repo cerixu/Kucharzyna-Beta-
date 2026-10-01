@@ -12,30 +12,6 @@ export function setRecipeTargetServings(value){state.recipeTargetServings=Math.m
 export function startCooking(id){const recipe=state.recipes.find(x=>x.id===id);if(!recipe)return;state.cookingRecipe=id;state.cookingStep=0;state.route="cooking";state.selectedRecipe=id;notify()}
 export function setCookingStep(value){const recipe=state.recipes.find(x=>x.id===state.cookingRecipe);const max=Math.max(0,(recipe?.steps?.length||1)-1);state.cookingStep=Math.min(max,Math.max(0,Math.round(Number(value)||0)));notify()}
 export function getRecipeCost(recipeId,targetServings){
-  const recipe=state.recipes.find(x=>x.id===recipeId);
-  if(!recipe)return {items:[],cost:0,priced:[],unpriced:[]};
-  const factor=Math.max(1,Number(targetServings)||Number(recipe.servings)||1)/(Number(recipe.servings)||1);
-  const normalize=value=>String(value||"").trim().toLocaleLowerCase("pl-PL").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  const items=(recipe.ingredients||[]).map(i=>{
-    const required=Number(i.qty)*factor;
-    const stock=state.inventory.find(x=>normalize(x.name)===normalize(i.name)&&normalize(x.unit)===normalize(i.unit));
-    const unitPrice=stock&&Number(stock.qty)>0?Number(stock.purchasePrice||0)/Number(stock.qty):0;
-    const cost=Number.isFinite(required)&&unitPrice>0?required*unitPrice:0;
-    const priced=Boolean(stock&&Number(stock.qty)>0&&Number(stock.purchasePrice)>0);
-    return {name:i.name,unit:i.unit,required:Number.isFinite(required)?required:0,inventoryId:stock?.id||null,unitPrice,cost,priced};
-  });
-  const priced=items.filter(x=>x.priced),unpriced=items.filter(x=>!x.priced);
-  return {items,cost:priced.reduce((sum,x)=>sum+x.cost,0),priced,unpriced};
-}
-export function getRecipeFoodCost(recipeId,targetServings){
-  const recipe=state.recipes.find(x=>x.id===recipeId);
-  const cost=getRecipeCost(recipeId,targetServings);
-  const servings=Math.max(1,Number(targetServings)||Number(recipe?.servings)||1);
-  const costPerServing=cost.cost/servings;
-  const sellPrice=Number(recipe?.sellPrice)||0;
-  return {...cost,servings,costPerServing,sellPrice,percent:sellPrice>0?(costPerServing/sellPrice)*100:null};
-}
-export function getRecipeCost(recipeId,targetServings){
   const recipe=state.recipes.find(x=>x.id===recipeId); if(!recipe)return {items:[],cost:0,priced:[],unpriced:[]};
   const factor=Math.max(1,Number(targetServings)||Number(recipe.servings)||1)/(Number(recipe.servings)||1);
   const normalize=value=>String(value||"").trim().toLocaleLowerCase("pl-PL").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
@@ -104,6 +80,8 @@ export async function removeShopping(id){await import("./db.js").then(db=>db.rem
 export async function saveInventory(item){const value={...item,id:item.id||("inventory-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)),qty:Math.max(0,Number(item.qty)||0),minQty:Math.max(0,Number(item.minQty)||0),purchasePrice:Math.max(0,Number(item.purchasePrice)||0),unit:String(item.unit||"g").trim()||"g",name:String(item.name||"").trim()};await put("inventory",value);const index=state.inventory.findIndex(x=>x.id===value.id);if(index>=0)state.inventory[index]=value;else state.inventory.push(value);notify();return value}
 export async function removeInventory(id){await import("./db.js").then(db=>db.remove("inventory",id));state.inventory=state.inventory.filter(x=>x.id!==id);notify()}
 export async function toggleFavorite(id){const recipe=state.recipes.find(x=>x.id===id);if(!recipe)return;recipe.favorite=!recipe.favorite;await put("recipes",recipe);notify()}
+export async function setMode(mode){state.settings.mode=mode==="amator"?"amator":"pro";await put("settings",{id:"app",value:state.settings});notify()}
+export function isProMode(){return state.settings.mode!=="amator"}
 export function setRoute(route){state.route=route;if(route!=="recipes"){state.editorMode=false;state.recipeTargetServings=null}if(route!=="cooking"){state.cookingRecipe=null;state.cookingStep=0}notify()}export function update(partial){Object.assign(state,partial);notify()}
 export async function hydrate(){
   const results=await Promise.allSettled([getAll("recipes"),getAll("shopping"),getAll("inventory"),getAll("settings")]);
