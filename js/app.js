@@ -199,7 +199,7 @@ function render(state){
       '<span class="nav-icon">'+icon(iconName)+'</span><span class="nav-label">'+label+"</span>"+
     "</button>").join("");
   app.innerHTML=
-    '<header class="app-topbar"><button class="brand-button" type="button" data-route="start" aria-label="Start"><span class="brand-mark">'+icon("chef")+'</span><span class="brand-title">Kucharzyna</span></button><span class="topbar-spacer"></span><span class="app-version" aria-label="Wersja aplikacji">v0.1.12</span></header>'+
+    '<header class="app-topbar"><button class="brand-button" type="button" data-route="start" aria-label="Start"><span class="brand-mark">'+icon("chef")+'</span><span class="brand-title">Kucharzyna</span></button><span class="topbar-spacer"></span><span class="app-version" aria-label="Wersja aplikacji">'+APP_VERSION+'</span></header>'+
     '<main class="app-scroll" id="main-scroll">'+screenContent(route,state)+'</main>'+
     '<nav class="app-bottom-nav" aria-label="Główna nawigacja">'+nav+"</nav>";
   app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)));
