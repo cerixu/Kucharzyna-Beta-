@@ -273,7 +273,7 @@ test("PRO inventory exposes EAN scanner fallback", async ({page})=>{
   await page.locator("#inventory-form [name=qty]").fill("100");
   await page.locator("#inventory-form [name=unit]").fill("szt.");
   await page.locator("#inventory-form [name=minQty]").fill("10");
-  await page.locator("#inventory-form button[type="submit"]").click();
+  await page.locator("#inventory-form button[type='submit']").click();
   await expect(page.getByText("Testowy produkt EAN",{exact:true})).toBeVisible();
   await page.getByRole("button",{name:/Skanuj produkt/i}).click();
   await page.locator("#barcode-ean").fill("5901234123457");
