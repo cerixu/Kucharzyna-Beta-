@@ -96,7 +96,7 @@ test("Mam Mąkę calculator supports production targets",async({page})=>{
 test("Mam Mąkę calculator calculates dough from flour",async({page})=>{
   await page.goto("#/calculators");
   await expect(page.getByRole("heading",{name:"Kalkulatory"})).toBeVisible();
-  await expect(page.getByText("Kalkulator ciasta")).toBeVisible();
+  await expect(page.getByText("Produkcja ciasta",{exact:true})).toBeVisible();
   await expect(page.locator("#dough-flour")).toHaveValue("7500");
   await expect(page.getByText("4875 g",{exact:true})).toBeVisible();
   await expect(page.getByText("12592.5 g",{exact:true})).toBeVisible();
