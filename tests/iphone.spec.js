@@ -104,6 +104,38 @@ test("Kuchnia prowadzi przez kroki receptury",async({page})=>{
   await expect(page.locator(".cook-step-card strong")).toHaveText("Utrzyj Pecorino z żółtkami i pieprzem.");
 });
 
+test("Kuchnia rozlicza zużyte składniki z magazynu",async({page})=>{
+  await page.goto("#/inventory");
+  const form=page.locator("#inventory-form");
+  const items=[
+    ["świeży makaron","300","g"],
+    ["guanciale","100","g"],
+    ["żółtko","4","szt."],
+    ["Pecorino Romano","70","g"],
+    ["pieprz czarny","4","g"]
+  ];
+  for(const [name,qty,unit] of items){
+    await form.locator("[name=name]").fill(name);
+    await form.locator("[name=qty]").fill(qty);
+    await form.locator("[name=unit]").fill(unit);
+    await form.locator("[name=minQty]").fill("0");
+    await form.getByRole("button",{name:"＋ Dodaj do magazynu"}).click();
+  }
+  await page.goto("#/recipes");
+  await page.locator(".recipe-card").filter({hasText:"Spaghetti alla Carbonara"}).click();
+  await page.getByRole("button",{name:"👨‍🍳 Zacznij gotowanie"}).click();
+  page.once("dialog",dialog=>dialog.accept());
+  for(let i=0;i<4;i++)await page.getByRole("button",{name:i===3?"Zakończ i rozlicz":"Dalej →"}).click();
+  await expect(page.getByRole("heading",{name:"Receptury"})).toBeVisible();
+  await page.goto("#/inventory");
+  const guanciale=page.locator(".inventory-row").filter({hasText:"guanciale"});
+  await expect(guanciale.locator("[data-inventory-qty]")).toHaveValue("50");
+  const pasta=page.locator(".inventory-row").filter({hasText:"świeży makaron"});
+  await expect(pasta.locator("[data-inventory-qty]")).toHaveValue("150");
+  const pecorino=page.locator(".inventory-row").filter({hasText:"Pecorino Romano"});
+  await expect(pecorino.locator("[data-inventory-qty]")).toHaveValue("35");
+});
+
 test("Magazyn obsługuje minima, alerty i edycję stanu",async({page})=>{
   await page.goto("#/inventory");
   await expect(page.getByRole("heading",{name:"Magazyn",exact:true})).toBeVisible();
