@@ -76,6 +76,18 @@ test("Recipe scaling recalculates ingredient quantities",async({page})=>{
   await expect(page.getByText("1000 g",{exact:true})).toBeVisible();
 });
 
+test("Mam Mąkę calculator calculates dough from flour",async({page})=>{
+  await page.goto("#/calculators");
+  await expect(page.getByRole("heading",{name:"Kalkulatory"})).toBeVisible();
+  await expect(page.getByText("Kalkulator ciasta")).toBeVisible();
+  await expect(page.locator("#dough-flour")).toHaveValue("7500");
+  await expect(page.getByText("4875 g",{exact:true})).toBeVisible();
+  await expect(page.getByText("5085 g",{exact:true})).toBeVisible();
+  await page.locator("#dough-hydration").fill("70");
+  await expect(page.getByText("5250 g",{exact:true})).toBeVisible();
+  await expect(page.getByText("5460 g",{exact:true})).toBeVisible();
+});
+
 test("Working modules no longer show placeholder",async({page})=>{
   await page.goto("/");
   await page.getByRole("button",{name:"Zakupy"}).last().click();
