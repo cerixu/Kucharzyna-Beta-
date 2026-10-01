@@ -101,6 +101,30 @@ test("Kuchnia prowadzi przez kroki receptury",async({page})=>{
   await expect(page.getByText("Utrzyj Pecorino z żółtkami i pieprzem.",{exact:true})).toBeVisible();
 });
 
+test("Magazyn obsługuje minima, alerty i edycję stanu",async({page})=>{
+  await page.goto("#/inventory");
+  await expect(page.getByRole("heading",{name:"Magazyn"})).toBeVisible();
+  const form=page.locator("#inventory-form");
+  await form.locator("[name=name]").fill("mąka 00");
+  await form.locator("[name=qty]").fill("5000");
+  await form.locator("[name=unit]").fill("g");
+  await form.locator("[name=minQty]").fill("6000");
+  await form.getByRole("button",{name:"＋ Dodaj do magazynu"}).click();
+  await expect(page.getByText("NISKI STAN",{exact:true})).toBeVisible();
+  await expect(page.getByText("Niskie stany: 1",{exact:false})).toBeVisible();
+  const row=page.locator(".inventory-row").filter({hasText:"mąka 00"});
+  await row.getByRole("button",{name:"Zwiększ mąka 00"}).click();
+  await expect(row.locator("[data-inventory-qty]")).toHaveValue("5001");
+  await row.locator("[data-inventory-qty]").fill("7000");
+  await row.locator("[data-inventory-qty]").press("Enter");
+  await expect(page.getByText("NISKI STAN",{exact:true})).toHaveCount(0);
+  await page.getByRole("button",{name:"Przełącz alerty magazynu"}).click();
+  await expect(page.getByRole("button",{name:"Przełącz alerty magazynu"})).not.toHaveClass(/active/);
+  await row.locator("[data-inventory-min]").fill("8000");
+  await row.locator("[data-inventory-min]").press("Enter");
+  await expect(page.getByText("NISKI STAN",{exact:true})).toHaveCount(0);
+});
+
 test("Working modules no longer show placeholder",async({page})=>{
   await page.goto("/");
   await page.getByRole("button",{name:"Zakupy"}).last().click();
