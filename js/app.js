@@ -222,7 +222,7 @@ function render(state){
     const existing=clean?getState().inventory.find(x=>String(x.ean||"").replace(/\D/g,"").slice(0,14)===clean):null;
     scannedInventoryId=existing?.id||null;
     const input=app.querySelector("#barcode-ean");if(input)input.value=clean;
-    if(clean)fillInventoryForm(existing||{ean:clean});
+    if(clean){const form=app.querySelector("#inventory-form");const eanField=form?.elements.namedItem("ean");if(eanField)eanField.value=clean;fillInventoryForm(existing||{ean:clean});if(eanField)eanField.value=clean;}
     const result=app.querySelector("#scanner-result");
     if(result){result.hidden=!clean;result.innerHTML=clean?(existing?'<b>✓ Produkt już jest w magazynie</b><span>'+escapeHtml(clean)+'</span><small>'+escapeHtml(existing.name)+' · '+escapeHtml(String(existing.qty))+' '+escapeHtml(existing.unit)+'. Formularz został uzupełniony, możesz zmienić dane i zapisać.</small>':'<b>✓ Kod odczytany</b><span>'+escapeHtml(clean)+'</span><small>Uzupełnij dane produktu poniżej i zapisz. Kod EAN zostanie przypisany do tego produktu.</small>'):'';}
     const status=app.querySelector("#scanner-status");if(status)status.textContent=clean?(existing?"✓ Znaleziono produkt w magazynie":"✓ Nowy EAN odczytany"):"Wpisz kod ręcznie";
