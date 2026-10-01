@@ -159,7 +159,7 @@ function shoppingScreen(state){
 }
 function inventoryScreen(state){
   const lowCount=state.inventory.filter(x=>state.settings.lowStockAlerts&&Number(x.minQty)>0&&Number(x.qty)<=Number(x.minQty)).length;
-  return '<section class="screen module-screen"><div class="module-head"><div><span class="section-kicker">STANY</span><h1 class="screen-title">Magazyn</h1><p class="screen-lead">Kontroluj ilości, minima i końcówki produktów.</p></div><span class="inventory-count">'+state.inventory.length+'</span></div>'+
+  return '<section class="screen module-screen"><div class="module-head"><div><span class="section-kicker">STANY</span><h1 class="screen-title">Magazyn</h1><p class="screen-lead">Kontroluj ilości, minima i końcówki produktów.</p></div><div class="inventory-head-actions"><span class="inventory-count">'+state.inventory.length+'</span><button class="toggle inventory-alert-toggle '+(state.settings.lowStockAlerts?"active":"")+'" type="button" id="inventory-alert-toggle" aria-label="Przełącz alerty magazynu"><span></span></button></div></div>'+
     '<form class="inventory-form" id="inventory-form"><input class="input" name="name" placeholder="Produkt..." autocomplete="off" required><div class="inventory-form-grid"><input class="input" name="qty" type="number" min="0" step="0.1" placeholder="Stan" required><input class="input" name="unit" value="g" placeholder="Jednostka"><input class="input" name="minQty" type="number" min="0" step="0.1" placeholder="Minimum"></div><button class="button button-primary button-block" type="submit">＋ Dodaj do magazynu</button></form>'+
     (lowCount?'<div class="inventory-alert"><b>⚠ Niskie stany: '+lowCount+'</b><span>Produkty poniżej ustawionego minimum.</span></div>':'')+
     '<div class="module-list inventory-list">'+(state.inventory.length?state.inventory.map(x=>{const low=state.settings.lowStockAlerts&&Number(x.minQty)>0&&Number(x.qty)<=Number(x.minQty);return '<article class="inventory-row '+(low?'is-low':'')+'"><div class="inventory-row-head"><div><b>'+escapeHtml(x.name)+'</b><small>'+x.qty+' '+escapeHtml(x.unit)+' · minimum '+(Number(x.minQty)||0)+' '+escapeHtml(x.unit)+'</small></div>'+(low?'<span class="inventory-badge">NISKI STAN</span>':'')+'</div><div class="inventory-row-controls"><button type="button" class="inventory-step" data-inventory-step="-1" data-inventory-id="'+x.id+'" aria-label="Zmniejsz '+escapeHtml(x.name)+'">−</button><input class="input inventory-current" data-inventory-qty="'+x.id+'" type="number" min="0" step="0.1" value="'+x.qty+'" aria-label="Stan '+escapeHtml(x.name)+'"><button type="button" class="inventory-step" data-inventory-step="1" data-inventory-id="'+x.id+'" aria-label="Zwiększ '+escapeHtml(x.name)+'">＋</button><input class="input inventory-min" data-inventory-min="'+x.id+'" type="number" min="0" step="0.1" value="'+(Number(x.minQty)||0)+'" aria-label="Minimum '+escapeHtml(x.name)+'"><button type="button" class="row-remove" data-inventory-remove="'+x.id+'" aria-label="Usuń '+escapeHtml(x.name)+'">×</button></div></article>'}).join(''):'<div class="empty-state"><h2>Magazyn jest pusty</h2><p>Dodaj pierwszy produkt i ustaw mu minimum.</p></div>')+'</div></section>';
@@ -189,7 +189,7 @@ function render(state){
     '<nav class="app-bottom-nav" aria-label="Główna nawigacja">'+nav+"</nav>";
   app.querySelectorAll("[data-route]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.route)));
   const shoppingForm=app.querySelector("#shopping-form");
-  if(shoppingForm)shoppingForm.addEventListener("submit",async e=>{e.preventDefault();const input=shoppingForm.elements.item;const name=input.value.trim();if(name){await saveShopping({name,purchased:false});}});
+  if(shoppingForm)shoppingForm.addEventListener("submit",async e=>{e.preventDefault();const input=shoppingForm.elements.namedItem("item");const name=input?.value.trim()||"";if(name){await saveShopping({name,purchased:false});input.value="";}});
   app.querySelectorAll("[data-shopping-toggle]").forEach(x=>x.addEventListener("change",()=>{const item=getState().shopping.find(i=>i.id===x.dataset.shoppingToggle);if(item)saveShopping({...item,purchased:x.checked})}));
   app.querySelectorAll("[data-shopping-remove]").forEach(x=>x.addEventListener("click",()=>removeShopping(x.dataset.shoppingRemove)));
   const inventoryForm=app.querySelector("#inventory-form");
@@ -202,6 +202,8 @@ function render(state){
   if(themeToggle)themeToggle.addEventListener("click",()=>saveSettings({theme:getState().settings.theme==="dark"?"light":"dark"}));
   const stockToggle=app.querySelector("#stock-alert-toggle");
   if(stockToggle)stockToggle.addEventListener("click",()=>saveSettings({lowStockAlerts:!getState().settings.lowStockAlerts}));
+  const inventoryStockToggle=app.querySelector("#inventory-alert-toggle");
+  if(inventoryStockToggle)inventoryStockToggle.addEventListener("click",()=>saveSettings({lowStockAlerts:!getState().settings.lowStockAlerts}));
   const addButton=app.querySelector(".recipe-add");
   if(addButton)addButton.addEventListener("click",()=>{getState().editorMode=true;selectRecipe(null)});
   const editorBack=app.querySelector("[data-editor-back]");
@@ -219,7 +221,7 @@ function render(state){
       const steps=[...form.querySelectorAll("[name=step]")].map(x=>x.value.trim()).filter(Boolean);
       const recipe={id:getState().selectedRecipe||null,name:String(fd.get("name")||"").trim(),category:String(fd.get("category")||"Inne"),region:String(fd.get("region")||"").trim(),time:String(fd.get("time")||"").trim(),servings:Number(fd.get("servings")||1),favorite:false,ingredients,steps,notes:String(fd.get("notes")||"").trim()};
       const old=getState().recipes.find(x=>x.id===recipe.id); if(old)recipe.favorite=old.favorite;
-      await saveRecipe(recipe);getState().editorMode=false;
+      await saveRecipe(recipe);getState().editorMode=false;getState().route="recipes";
     });
   }
   app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
