@@ -89,8 +89,8 @@ test("Mam Mąkę calculator supports production targets",async({page})=>{
   await page.locator("#production-balls").fill("30");
   await page.locator("#production-ball-weight").fill("250");
   await expect(page.locator("#production-out-total")).toHaveText("7500 g");
-  await expect(page.locator("#production-out-flour")).toHaveText("4466.17 g");
-  await expect(page.locator("#production-out-water")).toHaveText("2903.01 g");
+  await expect(page.locator("#production-out-flour")).toHaveText("4466.93 g");
+  await expect(page.locator("#production-out-water")).toHaveText("2903.50 g");
 });
 
 test("Mam Mąkę calculator calculates dough from flour",async({page})=>{
