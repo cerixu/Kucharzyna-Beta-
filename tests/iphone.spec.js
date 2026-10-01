@@ -63,3 +63,15 @@ test("Recipe editor creates and saves a recipe",async({page})=>{
   await expect(page.getByRole("heading",{name:"Testowa receptura"})).toBeVisible();
   await expect(page.getByText("masło",{exact:true})).toBeVisible();
 });
+
+
+test("Recipe scaling recalculates ingredient quantities",async({page})=>{
+  await page.goto("#/recipes");
+  await page.getByPlaceholder("Szukaj receptury lub składnika...").fill("carbonara");
+  await page.locator(".recipe-card").click();
+  await expect(page.getByRole("heading",{name:"Spaghetti alla Carbonara"})).toBeVisible();
+  await expect(page.getByText("50 g",{exact:true})).toBeVisible();
+  await page.getByLabel("Docelowa liczba porcji").fill("20");
+  await page.getByLabel("Docelowa liczba porcji").press("Enter");
+  await expect(page.getByText("1000 g",{exact:true})).toBeVisible();
+});
