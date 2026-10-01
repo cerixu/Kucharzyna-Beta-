@@ -214,7 +214,8 @@ function render(state){
     });
   }
   app.querySelectorAll("[data-recipe]").forEach(b=>b.addEventListener("click",()=>selectRecipe(b.dataset.recipe)));
-  app.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>toggleFavorite(b.dataset.favorite)));\n  app.querySelectorAll("[data-edit-recipe]").forEach(b=>b.addEventListener("click",()=>{getState().editorMode=true;render(getState())}));
+  app.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>toggleFavorite(b.dataset.favorite)));
+  app.querySelectorAll("[data-edit-recipe]").forEach(b=>b.addEventListener("click",()=>{getState().editorMode=true;render(getState())}));
   const back=app.querySelector("[data-recipe-back]"); if(back)back.addEventListener("click",()=>selectRecipe(null));
   const scaleInput=app.querySelector("#recipe-servings");
   if(scaleInput){
