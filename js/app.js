@@ -306,6 +306,6 @@ async function boot(){
   subscribe(render);
   initRouter(()=>render(getState()));
   render(getState());
-  if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+  if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js?v=20261001").catch(()=>{});
 }
 boot().catch(error=>{console.error(error);app.innerHTML='<main class="app-scroll"><section class="screen"><div class="empty-state"><h2>Nie udało się uruchomić Kucharzyny</h2><p>Odśwież aplikację.</p></div></section></main>'});
