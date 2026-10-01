@@ -158,7 +158,7 @@ function shoppingScreen(state){
 function inventoryScreen(state){
   return '<section class="screen module-screen"><span class="section-kicker">STANY</span><h1 class="screen-title">Magazyn</h1><p class="screen-lead">Produkty i ich aktualne ilości.</p><form class="quick-add-form" id="inventory-form"><input class="input" name="name" placeholder="Produkt..." autocomplete="off"><input class="input inventory-qty" name="qty" type="number" min="0" step="0.1" placeholder="Ilość"><input class="input inventory-unit" name="unit" value="g" placeholder="Jednostka"><button class="button button-primary" type="submit">＋</button></form><div class="module-list">'+(state.inventory.length?state.inventory.map(x=>'<div class="list-row"><span><b>'+x.name+'</b><small>'+x.qty+' '+x.unit+'</small></span><button type="button" class="row-remove" data-inventory-remove="'+x.id+'">×</button></div>').join(''):'<div class="empty-state"><h2>Magazyn jest pusty</h2><p>Dodaj produkt, żeby zacząć kontrolować stany.</p></div>')+'</div></section>';
 }
-function calculatorsScreen(){return '<section class="screen module-screen"><span class="section-kicker">NARZĘDZIA</span><h1 class="screen-title">Kalkulatory</h1><p class="screen-lead">Małe narzędzia do codziennej pracy.</p><div class="calculator-grid"><button class="module-card module-card-button" type="button" data-route="recipes"><div><small>SKALOWANIE</small><p>Przelicz dowolną recepturę na liczbę porcji.</p></div><span>→</span></button><div class="module-card"><div><small>JEDNOSTKI</small><p>Podstawowe przeliczenia ilości trzymamy tutaj jako bazę pod Kalkulator Pro.</p></div></div></div></section>'}
+function calculatorsScreen(){return '<section class="screen module-screen calculators-screen"><span class="section-kicker">NARZĘDZIA</span><h1 class="screen-title">Kalkulatory</h1><p class="screen-lead">Praktyczne przeliczenia do codziennej pracy.</p><div class="calculator-grid"><div class="calculator-card"><div class="calculator-card-head"><div><small>MAM MĄKĘ</small><h2>Kalkulator ciasta</h2></div><span class="calculator-badge">PRO</span></div><p class="calculator-copy">Podaj ilość mąki. Reszta policzy się z procentów piekarskich.</p><div class="calculator-form"><label>Mąka (g)<input class="input" id="dough-flour" type="number" min="1" step="1" value="7500"></label><label>Hydracja (%)<input class="input" id="dough-hydration" type="number" min="0" max="100" step="0.1" value="65"></label><label>Sól (%)<input class="input" id="dough-salt" type="number" min="0" max="10" step="0.1" value="2.8"></label><label>Drożdże świeże (%)<input class="input" id="dough-yeast" type="number" min="0" max="5" step="0.01" value="0.1"></label><label>Oliwa (%)<input class="input" id="dough-oil" type="number" min="0" max="20" step="0.1" value="0"></label></div><div class="calculator-result"><div><span>Mąka</span><b id="dough-out-flour">0 g</b></div><div><span>Woda</span><b id="dough-out-water">0 g</b></div><div><span>Sól</span><b id="dough-out-salt">0 g</b></div><div><span>Drożdże</span><b id="dough-out-yeast">0 g</b></div><div><span>Oliwa</span><b id="dough-out-oil">0 g</b></div><div class="calculator-total"><span>Gotowe ciasto</span><b id="dough-out-total">0 g</b></div></div></div><button class="module-card module-card-button" type="button" data-route="recipes"><div><small>SKALOWANIE</small><p>Przelicz dowolną recepturę na liczbę porcji.</p></div><span>→</span></button></div></section>'}
 function settingsScreen(state){return '<section class="screen module-screen"><span class="section-kicker">USTAWIENIA</span><h1 class="screen-title">Więcej</h1><p class="screen-lead">Wygląd i zachowanie Kucharzyny.</p><div class="settings-card"><div><b>Tryb ciemny</b><small>Interfejs dopasowany do pracy w kuchni.</small></div><button class="toggle '+(state.settings.theme==="dark"?'active':'')+'" type="button" id="theme-toggle" aria-label="Przełącz motyw"><span></span></button></div><div class="settings-card"><div><b>Alerty magazynu</b><small>Przygotowane pod kontrolę niskich stanów.</small></div><button class="toggle '+(state.settings.lowStockAlerts?'active':'')+'" type="button" id="stock-alert-toggle" aria-label="Przełącz alerty magazynu"><span></span></button></div></section>'}
 function screenContent(route,state){
   if(route==="start")return startScreen(state);
@@ -220,7 +220,7 @@ function render(state){
   if(scaleInput){
     const applyScale=value=>{const next=Math.max(1,Math.round(Number(value)||1));setRecipeTargetServings(next)};
     scaleInput.addEventListener("change",()=>applyScale(scaleInput.value));
-    scaleInput.addEventListener("input",()=>{if(scaleInput.value)applyScale(scaleInput.value)});
+    scaleInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();applyScale(scaleInput.value);scaleInput.blur()}});
     app.querySelectorAll("[data-scale-step]").forEach(button=>button.addEventListener("click",()=>applyScale(Number(scaleInput.value||1)+Number(button.dataset.scaleStep))));
   }
   const recipeInput=app.querySelector("#recipe-search");
@@ -237,6 +237,24 @@ function render(state){
     recipeInput.addEventListener("input",apply);
     clear.addEventListener("click",()=>{recipeInput.value="";apply();recipeInput.focus()});
     app.querySelectorAll("[data-category]").forEach(chip=>chip.addEventListener("click",()=>{category=chip.dataset.category;app.querySelectorAll("[data-category]").forEach(x=>x.classList.toggle("active",x===chip));apply()}));
+  }
+  const doughForm=app.querySelector(".calculators-screen");
+  if(doughForm){
+    const ids=["flour","hydration","salt","yeast","oil"];
+    const value=id=>Number(doughForm.querySelector("#dough-"+id).value)||0;
+    const format=n=>{const v=Math.round(n*100)/100;return Number.isInteger(v)?String(v):String(v)};
+    const calculate=()=>{
+      const flour=value("flour"), hydration=value("hydration"), salt=value("salt"), yeast=value("yeast"), oil=value("oil");
+      const water=flour*hydration/100, saltG=flour*salt/100, yeastG=flour*yeast/100, oilG=flour*oil/100;
+      doughForm.querySelector("#dough-out-flour").textContent=format(flour)+" g";
+      doughForm.querySelector("#dough-out-water").textContent=format(water)+" g";
+      doughForm.querySelector("#dough-out-salt").textContent=format(saltG)+" g";
+      doughForm.querySelector("#dough-out-yeast").textContent=format(yeastG)+" g";
+      doughForm.querySelector("#dough-out-oil").textContent=format(oilG)+" g";
+      doughForm.querySelector("#dough-out-total").textContent=format(flour+water+saltG+yeastG+oilG)+" g";
+    };
+    ids.forEach(id=>doughForm.querySelector("#dough-"+id).addEventListener("input",calculate));
+    calculate();
   }
   const input=app.querySelector("#home-search-input");
   const clear=app.querySelector(".home-search-clear");
